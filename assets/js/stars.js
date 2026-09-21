@@ -1,96 +1,122 @@
-/* ============================================================
-   stars.js — фоновая звёздная плоскость на всю страницу.
-   Canvas фиксирован (position:fixed, z-index:-1), поэтому
-   виден только там, где секции не задают собственный фон
-   (обычный .section — прозрачный, .section--dark — нет).
-   ============================================================ */
+/* =========================================================
+   Сияющие точки на фоне секций.
+   Рисуются на одном холсте позади всей страницы: звёзды
+   мерцают сами и медленно плывут вверх от прокрутки.
+   Холст один на весь сайт — это дешевле, чем канвас в каждой секции.
+   ========================================================= */
 (function () {
   'use strict';
 
-  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var COUNT = 90;           // на широком экране; на телефоне меньше
+  var MIN_GAP = 40;         // 25 кадров в секунду: мерцание медленное
 
-  var canvas = document.createElement('canvas');
-  canvas.id = 'starsCanvas';
-  canvas.setAttribute('aria-hidden', 'true');
-  canvas.style.cssText = 'position:fixed;inset:0;z-index:-1;pointer-events:none;display:block';
-  document.body.insertBefore(canvas, document.body.firstChild);
-  var ctx = canvas.getContext('2d');
+  function init() {
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  var DPR = Math.min(window.devicePixelRatio || 1, 2);
-  var W = 0, H = 0;
-  var stars = [];
+    var canvas = document.createElement('canvas');
+    canvas.className = 'stars';
+    canvas.setAttribute('aria-hidden', 'true');
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    document.body.appendChild(canvas);
 
-  function rand(seedObj) {
-    seedObj.s = (seedObj.s * 9301 + 49297) % 233280;
-    return seedObj.s / 233280;
-  }
+    var small = window.innerWidth < 760;
+    var count = small ? 45 : COUNT;
+    var stars = [];
+    var w = 0, h = 0, dpr = 1;
 
-  function build() {
-    var seed = { s: 42 };
-    var count = Math.round((W * H) / 9000);
-    count = Math.max(70, Math.min(220, count));
-    stars = [];
-    for (var i = 0; i < count; i++) {
-      var r = rand(seed);
-      var size = r < 0.6 ? 1 : r < 0.88 ? 1.6 : r < 0.97 ? 2.2 : 3;
-      stars.push({
-        x: rand(seed) * W,
-        y: rand(seed) * H,
-        size: size,
-        baseAlpha: 0.15 + rand(seed) * 0.25,
-        amp: 0.35 + rand(seed) * 0.45,
-        speed: 0.4 + rand(seed) * 1.1,
-        phase: rand(seed) * Math.PI * 2,
-        glow: size >= 2.2,
-      });
-    }
-  }
-
-  function resize() {
-    W = window.innerWidth;
-    H = window.innerHeight;
-    canvas.width = Math.round(W * DPR);
-    canvas.height = Math.round(H * DPR);
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    build();
-  }
-
-  function drawFrame(t) {
-    ctx.clearRect(0, 0, W, H);
-    for (var i = 0; i < stars.length; i++) {
-      var s = stars[i];
-      var alpha = reduceMotion
-        ? s.baseAlpha + s.amp * 0.3
-        : s.baseAlpha + s.amp * (0.5 + 0.5 * Math.sin(t * 0.001 * s.speed + s.phase));
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.size / 2, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,255,255,' + alpha.toFixed(3) + ')';
-      if (s.glow) {
-        ctx.shadowColor = 'rgba(255,255,255,.5)';
-        ctx.shadowBlur = s.size * 2.5;
-      } else {
-        ctx.shadowBlur = 0;
+    /* Координаты звёзд в долях экрана: при смене размера окна
+       пересчитывать их заново не нужно, картинка не перестраивается. */
+    function seed() {
+      stars.length = 0;
+      for (var i = 0; i < count; i++) {
+        stars.push({
+          x: Math.random(),
+          y: Math.random(),
+          r: 0.4 + Math.random() * 1.5,          // радиус в пикселях
+          base: 0.15 + Math.random() * 0.5,      // своя яркость
+          speed: 0.4 + Math.random() * 1.1,      // скорость мерцания
+          phase: Math.random() * Math.PI * 2,
+          drift: 0.15 + Math.random() * 0.5,     // насколько сильно тянется за прокруткой
+          big: Math.random() > 0.9               // каждая десятая — с лучиками
+        });
       }
-      ctx.fill();
     }
+
+    function resize() {
+      var nw = window.innerWidth;
+      var nh = window.innerHeight;
+      var ndpr = Math.min(window.devicePixelRatio || 1, 2);
+      if (nw === w && nh === h && ndpr === dpr) return;
+      w = nw; h = nh; dpr = ndpr;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function draw(t) {
+      resize();
+      ctx.clearRect(0, 0, w, h);
+      var scroll = window.pageYOffset;
+
+      for (var i = 0; i < stars.length; i++) {
+        var s = stars[i];
+
+        /* Звезда уезжает вверх медленнее страницы и заворачивается
+           по кругу — поле никогда не заканчивается. */
+        var y = (s.y * h - scroll * s.drift * 0.25) % h;
+        if (y < 0) y += h;
+        var x = s.x * w;
+
+        var blink = 0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase);
+        var a = s.base * blink;
+        if (a <= 0.02) continue;
+
+        ctx.beginPath();
+        ctx.arc(x, y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,' + a.toFixed(3) + ')';
+        ctx.fill();
+
+        /* Крупные — с мягким ореолом и короткими лучиками */
+        if (s.big) {
+          var g = ctx.createRadialGradient(x, y, 0, x, y, s.r * 9);
+          g.addColorStop(0, 'rgba(255,255,255,' + (a * 0.5).toFixed(3) + ')');
+          g.addColorStop(1, 'rgba(255,255,255,0)');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(x, y, s.r * 9, 0, Math.PI * 2);
+          ctx.fill();
+
+          var len = s.r * 5 * blink;
+          ctx.strokeStyle = 'rgba(255,255,255,' + (a * 0.45).toFixed(3) + ')';
+          ctx.lineWidth = 0.7;
+          ctx.beginPath();
+          ctx.moveTo(x - len, y); ctx.lineTo(x + len, y);
+          ctx.moveTo(x, y - len); ctx.lineTo(x, y + len);
+          ctx.stroke();
+        }
+      }
+    }
+
+    seed();
+    resize();
+
+    if (reduced) {                 // без мерцания — один статичный кадр
+      draw(0);
+      window.addEventListener('resize', function () { draw(0); });
+      return;
+    }
+
+    var last = 0;
+    function frame(now) {
+      requestAnimationFrame(frame);
+      if (now - last < MIN_GAP) return;
+      last = now;
+      draw(now);
+    }
+    requestAnimationFrame(frame);
   }
 
-  var raf = null;
-  function loop(ts) {
-    if (!document.hidden) drawFrame(ts);
-    raf = requestAnimationFrame(loop);
-  }
-
-  var resizeTimer;
-  window.addEventListener('resize', function () {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(resize, 150);
-  });
-
-  resize();
-  if (reduceMotion) {
-    drawFrame(0);
-  } else {
-    raf = requestAnimationFrame(loop);
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();

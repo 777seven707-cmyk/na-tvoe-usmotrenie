@@ -132,8 +132,8 @@
           if (start === null) start = ts;
           var p = Math.min((ts - start) / dur, 1);
           var eased = 1 - Math.pow(1 - p, 4);
-          var n = Math.round(to * eased);
-          el.textContent = n >= 1000 ? String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : n;
+          /* Разряды — неразрывным пробелом, иначе «38 000» разъедется по строкам */
+          el.textContent = String(Math.round(to * eased)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0');
           if (p < 1) requestAnimationFrame(step);
         }
         requestAnimationFrame(step);
@@ -141,6 +141,13 @@
       });
     }, { threshold: 0.5 });
     counters.forEach(function (el) { io.observe(el); });
+
+    /* Валюта сменилась — число в карточке тарифа другое, показываем сразу */
+    document.addEventListener('i18n:applied', function () {
+      $$('.plan__price .count').forEach(function (el) {
+        el.textContent = String(el.dataset.to).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0');
+      });
+    });
   }
 
   /* ---------- 6. ШАПКА: ПРЯТАТЬ / ПОКАЗЫВАТЬ + ПРОГРЕСС ---------- */
@@ -230,15 +237,266 @@
     });
   }
 
-  /* ---------- 10. FAQ: ОДИН ОТКРЫТЫЙ ПУНКТ ---------- */
+  /* ---------- 10. FAQ: ОДИН ОТКРЫТЫЙ ПУНКТ + ПЛАВНАЯ ВЫСОТА ---------- */
   function initFaq() {
     var items = $$('.faq__item');
+
+    /* Браузер открывает <details> мгновенно, поэтому высоту ведём сами:
+       0 → реальная высота текста, и наоборот при закрытии. */
+    function open(item) {
+      var body = $('.faq__body', item);
+      if (!body) return;
+      item.open = true;
+      if (reduced) { body.style.height = 'auto'; return; }
+      body.style.height = body.scrollHeight + 'px';
+    }
+
+    function close(item) {
+      var body = $('.faq__body', item);
+      if (!body) { item.open = false; return; }
+      if (reduced) { body.style.height = ''; item.open = false; return; }
+      body.style.height = body.scrollHeight + 'px';
+      requestAnimationFrame(function () { body.style.height = '0px'; });
+      window.setTimeout(function () { if (body.style.height === '0px') item.open = false; }, 450);
+    }
+
     items.forEach(function (item) {
-      item.addEventListener('toggle', function () {
-        if (!item.open) return;
-        items.forEach(function (other) { if (other !== item) other.open = false; });
+      var summary = $('summary', item);
+      var body = $('.faq__body', item);
+      if (!summary || !body) return;
+
+      /* Открытая высота зависит от ширины окна — пересчитываем */
+      window.addEventListener('resize', function () {
+        if (item.open && !reduced) body.style.height = body.scrollHeight + 'px';
+      });
+
+      summary.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (item.open) { close(item); return; }
+        items.forEach(function (other) { if (other !== item && other.open) close(other); });
+        open(item);
       });
     });
+  }
+
+  /* ---------- 16. ЗАГОЛОВКИ РАЗДЕЛОВ ПО СЛОВАМ ---------- */
+  /* Каждое слово в своём «окошке»: текст выезжает снизу с задержкой.
+     Переносы строк <br> остаются на месте. */
+  function initSplitTitles() {
+    if (reduced) return;
+    $$('.sec-title[data-reveal="wipe"]').forEach(function (title) {
+      var i = 0, parts = [];
+
+      Array.prototype.forEach.call(title.childNodes, function (node) {
+        if (node.nodeType === 3) {
+          node.textContent.split(/(\s+)/).forEach(function (chunk) {
+            if (!chunk) return;
+            if (!chunk.trim()) { parts.push(document.createTextNode(chunk)); return; }
+            var box = document.createElement('span');
+            box.className = 'w';
+            box.style.setProperty('--i', i++);
+            var inner = document.createElement('i');
+            inner.textContent = chunk;
+            box.appendChild(inner);
+            parts.push(box);
+          });
+        } else {
+          parts.push(node.cloneNode(true));
+        }
+      });
+
+      if (!parts.length) return;
+      title.innerHTML = '';
+      parts.forEach(function (node) { title.appendChild(node); });
+      title.setAttribute('data-reveal', 'words');
+    });
+  }
+
+  /* Перевод заменяет содержимое заголовка целиком — режем его заново */
+  function watchTitles() {
+    if (reduced) return;
+    document.addEventListener('i18n:applied', function () {
+      $$('.sec-title').forEach(function (title) {
+        var wasIn = title.classList.contains('is-in');
+        title.setAttribute('data-reveal', 'wipe');
+        initSplitTitles();
+        if (wasIn) title.classList.add('is-in');
+      });
+    });
+  }
+
+  /* ---------- 17. СВЕЧЕНИЕ ЗА КУРСОРОМ НА ТЁМНЫХ СЕКЦИЯХ ---------- */
+  function initGlow() {
+    if (isTouch || reduced) return;
+    $$('.section--dark').forEach(function (sec) {
+      var layer = document.createElement('div');
+      layer.className = 'glow';
+      layer.setAttribute('aria-hidden', 'true');
+      sec.insertBefore(layer, sec.firstChild);
+
+      var x = 0, y = 0, queued = false;
+      function apply() {
+        queued = false;
+        layer.style.setProperty('--gx', x + 'px');
+        layer.style.setProperty('--gy', y + 'px');
+      }
+      sec.addEventListener('mousemove', function (e) {
+        var r = sec.getBoundingClientRect();
+        x = e.clientX - r.left;
+        y = e.clientY - r.top;
+        if (!queued) { queued = true; requestAnimationFrame(apply); }
+      });
+      sec.addEventListener('mouseenter', function () { sec.classList.add('is-lit'); });
+      sec.addEventListener('mouseleave', function () { sec.classList.remove('is-lit'); });
+    });
+  }
+
+  /* ---------- 18. БЕГУЩАЯ СТРОКА РАЗГОНЯЕТСЯ ОТ ПРОКРУТКИ ---------- */
+  /* Двигаем строку сами, кадр за кадром. Раньше это была CSS-анимация,
+     а скорость менялась через animation-duration — но браузер на каждое
+     такое изменение пересчитывает фазу заново, и строка видимо дёргалась.
+     Своя петля просто прибавляет к сдвигу столько, сколько нужно. */
+  function initMarquee() {
+    var track = $('.marquee__track');
+    var host = $('.marquee');
+    if (!track || reduced) return;
+
+    var BASE = 62;               // пикселей в секунду в покое
+    var half = 0;                // длина одной половины строки (она продублирована)
+    var offset = 0, boost = 0, paused = false;
+    var lastScroll = window.pageYOffset, lastTime = 0;
+
+    function measure() { half = track.scrollWidth / 2; }
+    measure();
+    window.addEventListener('resize', measure);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+
+    if (host) {
+      host.addEventListener('mouseenter', function () { paused = true; });
+      host.addEventListener('mouseleave', function () { paused = false; });
+    }
+
+    window.addEventListener('scroll', function () {
+      var now = window.pageYOffset;
+      /* Разгон копится от скорости прокрутки и гаснет сам */
+      boost = Math.min(900, boost + Math.abs(now - lastScroll) * 6);
+      lastScroll = now;
+    }, { passive: true });
+
+    function frame(now) {
+      requestAnimationFrame(frame);
+      if (!lastTime) { lastTime = now; return; }
+      var dt = Math.min(0.05, (now - lastTime) / 1000);   // после вкладки в фоне не прыгаем
+      lastTime = now;
+
+      boost *= 0.94;
+      if (boost < 1) boost = 0;
+      if (!paused && half > 0) {
+        offset += (BASE + boost) * dt;
+        if (offset >= half) offset -= half;              // половина проехала — начинаем заново
+        track.style.transform = 'translate3d(' + (-offset).toFixed(2) + 'px,0,0)';
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- 18.5 ФОН СЕКЦИЙ ЖИВЁТ ОТ ПРОКРУТКИ ---------- */
+  /* Штрих по кривым плывёт сам по себе, а прокрутка его разгоняет.
+     Заодно пучок сдвигается, разворачивается и приближается, пока
+     секция проходит через экран. Меняются только transform и смещение
+     штриха — это композитные свойства, страница не перерисовывается. */
+  function initPathsMotion() {
+    var hosts = $$('.paths');
+    if (!hosts.length || reduced) return;
+
+    var BASE = 0.075;            // полный проход штриха примерно за 13 секунд
+    var flow = 0, boost = 0, lastTime = 0;
+    var lastScroll = window.pageYOffset;
+
+    window.addEventListener('scroll', function () {
+      var now = window.pageYOffset;
+      boost = Math.min(4, boost + Math.abs(now - lastScroll) * 0.016);
+      lastScroll = now;
+    }, { passive: true });
+
+    function frame(now) {
+      requestAnimationFrame(frame);
+      if (!lastTime) { lastTime = now; return; }
+      var dt = Math.min(0.05, (now - lastTime) / 1000);   // после вкладки в фоне не прыгаем
+      lastTime = now;
+
+      boost *= 0.93;
+      if (boost < 0.001) boost = 0;
+      flow += (BASE + boost) * dt;
+
+      var vh = window.innerHeight;
+      hosts.forEach(function (host) {
+        var r = host.getBoundingClientRect();
+        if (r.bottom < -200 || r.top > vh + 200) return;   // вне экрана не считаем
+        var svg = host.firstElementChild;
+        if (!svg) return;
+        /* -1 — секция внизу экрана, 0 — по центру, 1 — вверху */
+        var p = 1 - 2 * ((r.top + r.height / 2) / vh);
+        svg.style.setProperty('--py', (p * 46).toFixed(1) + 'px');
+        svg.style.setProperty('--rot', (p * 3.2).toFixed(2) + 'deg');
+        svg.style.setProperty('--sc', (1 + Math.abs(p) * 0.07).toFixed(3));
+        svg.style.setProperty('--flow', (-flow).toFixed(4));
+      });
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- 18.8 КНОПКА ПОДДЕРЖКИ ---------- */
+  function initHelp() {
+    var box = $('#help');
+    var btn = $('#helpBtn');
+    var panel = $('#helpPanel');
+    if (!box || !btn || !panel) return;
+
+    function open(on) {
+      box.classList.toggle('is-open', on);
+      btn.setAttribute('aria-expanded', String(on));
+      panel.hidden = !on;
+    }
+    open(false);
+
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      open(panel.hidden);
+    });
+
+    /* Клик мимо панели и Esc закрывают её */
+    document.addEventListener('click', function (e) {
+      if (!box.contains(e.target)) open(false);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') open(false);
+    });
+    panel.addEventListener('click', function (e) {
+      if (e.target.closest('a')) open(false);        // выбрали канал — панель не нужна
+    });
+  }
+
+  /* ---------- 19. КНОПКА «НАВЕРХ» ---------- */
+  function initToTop() {
+    var btn = $('#toTop');
+    var hero = $('.hero');
+    if (!btn) return;
+    var ticking = false;
+
+    function update() {
+      ticking = false;
+      var limit = hero ? hero.offsetHeight * 0.8 : 600;
+      btn.classList.toggle('is-on', window.pageYOffset > limit);
+    }
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+    });
+    update();
   }
 
   /* ---------- 11. ПЛАВНАЯ ПРОКРУТКА С УЧЁТОМ ШАПКИ ---------- */
@@ -262,7 +520,8 @@
     var form = $('#form');
     if (!form) return;
     var done = $('#formDone');
-    var MAIL = 'hello@natvoeusmotrenie.studio';
+    /* Адрес берём из общего файла контактов, а не из копии здесь */
+    var MAIL = (window.CONTACTS && window.CONTACTS.mail) || 'natvoeusmotrenie@gmail.com';
 
     function setErr(field, on) { field.classList.toggle('is-err', on); }
 
@@ -278,18 +537,104 @@
       if (!ok) return;
 
       var data = new FormData(form);
-      var plan = data.get('plan') || 'не выбран';
+      /* Письмо уходит на языке, который выбран на сайте */
+      var L = {
+        ru: { none: 'не выбран', name: 'Имя', contact: 'Связь', plan: 'Тариф', task: 'О задаче', subj: 'Заявка с сайта', sending: 'Отправляем…' },
+        en: { none: 'not chosen', name: 'Name', contact: 'Contact', plan: 'Plan', task: 'About the task', subj: 'Enquiry from the website', sending: 'Sending…' },
+        kk: { none: 'таңдалмаған', name: 'Аты', contact: 'Байланыс', plan: 'Тариф', task: 'Міндет туралы', subj: 'Сайттан өтінім', sending: 'Жіберілуде…' }
+      }[document.documentElement.lang] || null;
+      var w = L || { none: 'не выбран', name: 'Имя', contact: 'Связь', plan: 'Тариф', task: 'О задаче', subj: 'Заявка с сайта', sending: 'Отправляем…' };
+      var plan = data.get('plan') || w.none;
       var body =
-        'Имя: ' + data.get('name') + '\n' +
-        'Связь: ' + data.get('contact') + '\n' +
-        'Тариф: ' + plan + '\n\n' +
-        'О задаче:\n' + (data.get('message') || '—');
+        w.name + ': ' + data.get('name') + '\n' +
+        w.contact + ': ' + data.get('contact') + '\n' +
+        w.plan + ': ' + plan + '\n\n' +
+        w.task + ':\n' + (data.get('message') || '—');
 
-      window.location.href = 'mailto:' + MAIL +
-        '?subject=' + encodeURIComponent('Заявка с сайта — ' + plan) +
-        '&body=' + encodeURIComponent(body);
+      /* Показываем, что заявка уходит: без отклика кажется,
+         будто кнопка не сработала. */
+      var btn = $('button[type="submit"]', form);
+      var label = btn ? $('span', btn) : null;
+      var was = label ? label.textContent : '';
+      if (btn) btn.classList.add('is-sending');
+      if (label) label.textContent = w.sending;
 
-      if (done) done.hidden = false;
+      function finish(kind) {
+        if (btn) btn.classList.remove('is-sending');
+        if (label) label.textContent = was;
+        show(kind);
+      }
+
+      function byMail() {
+        window.location.href = 'mailto:' + MAIL +
+          '?subject=' + encodeURIComponent(w.subj + ' — ' + plan) +
+          '&body=' + encodeURIComponent(body);
+        finish('mail');
+      }
+
+      var id = window.CONTACTS && window.CONTACTS.formspree;
+      if (!id || !window.fetch) {                 // код не вписан — работаем как раньше
+        window.setTimeout(byMail, reduced ? 0 : 500);
+        return;
+      }
+
+      /* Отправляем на сервер. Если не вышло — не теряем заявку,
+         а открываем почтовую программу, как раньше. */
+      fetch('https://formspree.io/f/' + id, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.get('name'),
+          contact: data.get('contact'),
+          plan: plan,
+          message: data.get('message') || '',
+          _subject: w.subj + ' — ' + plan
+        })
+      }).then(function (res) {
+        if (!res.ok) throw new Error('formspree ' + res.status);
+        form.reset();
+        finish('sent');
+      }).catch(function () {
+        byMail();
+      });
+    });
+
+    /* Сообщение под формой: текст зависит от того, как ушла заявка,
+       и от выбранного языка. Элемент не помечен data-i18n, поэтому
+       переводим его здесь. */
+    var msg = $('#formMsg');
+    var lastKind = '';
+
+    function texts() {
+      var mail = (window.CONTACTS && window.CONTACTS.mail) || MAIL;
+      return {
+        ru: {
+          sent: 'Заявка отправлена. Ответим в течение суток — следите за почтой и Telegram.',
+          mail: 'Заявка сформирована — откроется почтовый клиент. Если он не открылся, напишите нам напрямую на <b>' + mail + '</b>'
+        },
+        en: {
+          sent: 'The enquiry has been sent. We will reply within a day — watch your email and Telegram.',
+          mail: 'The enquiry is ready — your mail app will open. If it did not, write to us directly at <b>' + mail + '</b>'
+        },
+        kk: {
+          sent: 'Өтінім жіберілді. Бір тәулік ішінде жауап береміз — поштаңыз бен Telegram-ды қараңыз.',
+          mail: 'Өтінім дайын — пошта бағдарламасы ашылады. Ашылмаса, бізге тікелей <b>' + mail + '</b> жазыңыз'
+        }
+      }[document.documentElement.lang] || null;
+    }
+
+    function show(kind) {
+      lastKind = kind;
+      var t = texts();
+      if (msg && t) msg.innerHTML = t[kind];
+      if (done) {
+        done.hidden = false;
+        requestAnimationFrame(function () { done.classList.add('is-on'); });
+      }
+    }
+
+    document.addEventListener('i18n:applied', function () {
+      if (lastKind) show(lastKind);
     });
 
     $$('input, textarea', form).forEach(function (input) {
@@ -395,6 +740,8 @@
     initLoader();
     initCursor();
     initMagnetic();
+    initSplitTitles();   // режем заголовки до того, как за ними придёт наблюдатель
+    watchTitles();
     initReveal();
     initCounters();
     initHeader();
@@ -402,6 +749,11 @@
     initMenu();
     initTilt();
     initFaq();
+    initGlow();
+    initMarquee();
+    initPathsMotion();
+    initHelp();
+    initToTop();
     initAnchors();
     initForm();
     initHeroTheme();

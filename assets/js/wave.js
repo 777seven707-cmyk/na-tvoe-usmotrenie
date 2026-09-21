@@ -1,96 +1,216 @@
-/* ============================================================
-   wave.js — лёгкая Canvas2D-анимация «волны» для #waveStage.
-   Заменяет прежнюю WebGL-чёрную дыру: несколько наложенных
-   синусоидальных лент, которые медленно текут и дышат.
-   ============================================================ */
+/* =========================================================
+   Интерактивная волна на первом экране.
+   Сетка в перспективе: точки считаются в нормальных координатах
+   и делятся на глубину — дальние ряды сходятся к горизонту
+   и бледнеют. Рисуется линиями, а не заливками: на тёмном фоне
+   это читается как графика и стоит дешевле любого размытия.
+
+   Волну можно двигать мышкой: курсор ведёт её мягко,
+   перетаскивание — сильно и с инерцией.
+   ========================================================= */
 (function () {
   'use strict';
 
-  var stage = document.getElementById('waveStage');
-  if (!stage) return;
+  var ROWS = 26;
+  var COLS = 34;
+  var MIN_GAP = 33;        // 30 кадров в секунду: волна движется медленно, разницы не видно
 
-  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function init() {
+    var host = document.getElementById('waveStage');
+    if (!host) return;
 
-  var canvas = document.createElement('canvas');
-  canvas.className = 'wave-canvas';
-  stage.appendChild(canvas);
-  var ctx = canvas.getContext('2d');
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var isTouch = window.matchMedia('(hover: none)').matches;
 
-  var W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
+    var canvas = document.createElement('canvas');
+    canvas.className = 'wave-canvas';
+    canvas.setAttribute('aria-hidden', 'true');
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    host.appendChild(canvas);
 
-  var RIBBONS = [
-    { amp: 0.10, freq: 1.6, speed: 0.35, phase: 0,   y: 0.32, width: 1.4, alpha: 0.55 },
-    { amp: 0.14, freq: 1.1, speed: 0.22, phase: 1.4, y: 0.48, width: 1.6, alpha: 0.75 },
-    { amp: 0.09, freq: 2.1, speed: 0.30, phase: 2.8, y: 0.58, width: 1.1, alpha: 0.4 },
-    { amp: 0.16, freq: 0.9, speed: 0.18, phase: 4.2, y: 0.68, width: 1.8, alpha: 0.9 },
-    { amp: 0.07, freq: 2.6, speed: 0.40, phase: 5.6, y: 0.40, width: 1, alpha: 0.3 },
-  ];
+    var w = 0, h = 0, dpr = 1;
 
-  function resize() {
-    var rect = stage.getBoundingClientRect();
-    W = Math.max(1, rect.width);
-    H = Math.max(1, rect.height);
-    canvas.width = Math.round(W * DPR);
-    canvas.height = Math.round(H * DPR);
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  }
+    /* На телефоне экран узкий: сетка проходит прямо по тексту.
+       Там она заметно бледнее и реже, иначе абзац не читается. */
+    var soft = isTouch ? 0.5 : 1;
+    var step = isTouch ? 4 : 3;
 
-  function drawRibbon(r, t) {
-    var steps = 90;
-    ctx.beginPath();
-    for (var i = 0; i <= steps; i++) {
-      var nx = i / steps;
-      var x = nx * W;
-      var y =
-        H * r.y +
-        Math.sin(nx * Math.PI * 2 * r.freq + t * r.speed + r.phase) * H * r.amp;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+    function resize() {
+      var r = host.getBoundingClientRect();
+      var nw = Math.max(1, r.width);
+      var nh = Math.max(1, r.height);
+      var ndpr = Math.min(window.devicePixelRatio || 1, 2);
+      if (nw === w && nh === h && ndpr === dpr) return;
+      w = nw; h = nh; dpr = ndpr;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
-    ctx.strokeStyle = 'rgba(255,255,255,' + r.alpha + ')';
-    ctx.lineWidth = r.width;
-    ctx.lineCap = 'round';
-    ctx.shadowColor = 'rgba(255,255,255,.35)';
-    ctx.shadowBlur = 6;
-    ctx.stroke();
-  }
 
-  function frame(ts) {
-    if (document.hidden) {
-      raf = requestAnimationFrame(frame);
-      return;
+    /* ---------- УПРАВЛЕНИЕ ----------
+       aim  — куда смотрит курсор, 0..1 по экрану;
+       push — сдвиг от перетаскивания, копится и гасится сам. */
+    var aimX = 0.5, aimY = 0.5, curX = 0.5, curY = 0.5;
+    var pushX = 0, pushY = 0, curPushX = 0, curPushY = 0;
+    var velX = 0, velY = 0;
+    var dragging = false, lastX = 0, lastY = 0;
+    var lift = 0, liftTarget = 0;     // оживление, пока курсор над первым экраном
+
+    var hero = host.closest('.hero');
+
+    if (!isTouch && !reduced) {
+      window.addEventListener('pointermove', function (e) {
+        if (e.pointerType === 'touch') return;
+        aimX = e.clientX / window.innerWidth;
+        aimY = e.clientY / window.innerHeight;
+      }, { passive: true });
+
+      if (hero) {
+        hero.addEventListener('mouseenter', function () { liftTarget = 1; hero.classList.add('is-awake'); });
+        hero.addEventListener('mouseleave', function () { liftTarget = 0; hero.classList.remove('is-awake'); });
+      }
+
+      /* Тянуть можно за любое свободное место первого экрана.
+         Слушать сам холст бесполезно: поверх него лежит слой с текстом
+         и перехватывает мышь почти на всей площади. */
+      var surface = hero || canvas;
+      surface.classList.add('is-grabbable');
+
+      /* Ссылки, кнопки и поля должны работать как обычно */
+      function isControl(el) {
+        return !!(el && el.closest && el.closest('a,button,input,textarea,select,label,summary,details'));
+      }
+
+      surface.addEventListener('pointerdown', function (e) {
+        if (e.pointerType === 'touch' || isControl(e.target)) return;
+        dragging = true;
+        lastX = e.clientX; lastY = e.clientY;
+        velX = velY = 0;
+        surface.classList.add('is-grabbing');
+        if (surface.setPointerCapture) surface.setPointerCapture(e.pointerId);
+        e.preventDefault();
+      });
+
+      surface.addEventListener('pointermove', function (e) {
+        if (!dragging) return;
+        velX = (e.clientX - lastX) / Math.max(1, w);
+        velY = (e.clientY - lastY) / Math.max(1, h);
+        pushX = Math.max(-1, Math.min(1, pushX + velX * 1.6));
+        pushY = Math.max(-1, Math.min(1, pushY + velY * 1.6));
+        lastX = e.clientX; lastY = e.clientY;
+      });
+
+      function endDrag(e) {
+        if (!dragging) return;
+        dragging = false;
+        surface.classList.remove('is-grabbing');
+        if (surface.releasePointerCapture && e && e.pointerId != null) {
+          try { surface.releasePointerCapture(e.pointerId); } catch (err) {}
+        }
+      }
+      surface.addEventListener('pointerup', endDrag);
+      surface.addEventListener('pointercancel', endDrag);
+      surface.addEventListener('lostpointercapture', endDrag);
     }
-    var t = ts / 1000;
-    ctx.clearRect(0, 0, W, H);
-    for (var i = 0; i < RIBBONS.length; i++) drawRibbon(RIBBONS[i], t);
-    raf = requestAnimationFrame(frame);
-  }
 
-  var raf = null;
+    /* Проекция узла сетки: depth растёт вглубь, координаты делятся на него */
+    function project(u, v, t) {
+      var depth = 0.55 + v * 2.6;
+      var sway = (curX - 0.5) * 0.5 + curPushX * 0.55;
+      var amp = 1 + lift * 0.55;                    // над первым экраном волна выше
+      var wave =
+        Math.sin(u * 3.1 + t * 0.00028 + v * 2.2) * 0.06 * amp +
+        Math.cos(v * 5.5 - t * 0.00045) * 0.035 * amp +
+        ((curY - 0.5) * 0.06 + curPushY * 0.13) * (1 - v);
 
-  function start() {
-    resize();
-    if (reduceMotion) {
-      drawStatic();
-      return;
+      return {
+        /* 0.38 — линия горизонта. Чем меньше, тем выше она стоит
+           и тем больше сетки попадает в верхнюю половину экрана. */
+        x: w * (0.5 + ((u - 0.5) * 1.62 + sway * (1 - v)) / depth),
+        y: h * (0.38 + (wave - v * 0.2) / (depth * 0.44)),
+        fade: Math.max(0, 1 - v * 1.15)
+      };
     }
-    raf = requestAnimationFrame(frame);
-  }
 
-  function drawStatic() {
-    ctx.clearRect(0, 0, W, H);
-    for (var i = 0; i < RIBBONS.length; i++) drawRibbon(RIBBONS[i], 0);
-  }
-
-  var resizeTimer;
-  window.addEventListener('resize', function () {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(function () {
+    function draw(t) {
       resize();
-      if (reduceMotion) drawStatic();
-    }, 150);
-  });
+      if (w < 2 || h < 2) return;
 
-  start();
-  stage.classList.add('is-live');
+      curX += (aimX - curX) * 0.03;
+      curY += (aimY - curY) * 0.03;
+      curPushX += (pushX - curPushX) * 0.06;
+      curPushY += (pushY - curPushY) * 0.06;
+      lift += (liftTarget - lift) * 0.04;
+
+      /* Отпустили — волна не застывает, а медленно возвращается к покою */
+      if (!dragging) { pushX *= 0.992; pushY *= 0.992; }
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.lineWidth = 1;
+
+      var r, c, u, v, p;
+
+      // Поперечные линии — гребни волны
+      for (r = 0; r < ROWS; r++) {
+        v = r / (ROWS - 1);
+        ctx.beginPath();
+        for (c = 0; c < COLS; c++) {
+          p = project(c / (COLS - 1), v, t);
+          if (c === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+        }
+        ctx.strokeStyle = 'rgba(255,255,255,' + ((0.06 + (1 - v) * 0.5 * (1 + lift * 0.3)) * soft).toFixed(3) + ')';
+        ctx.stroke();
+      }
+
+      // Продольные — задают перспективу и глубину кадра
+      for (c = 0; c < COLS; c += step) {
+        u = c / (COLS - 1);
+        ctx.beginPath();
+        for (r = 0; r < ROWS; r++) {
+          p = project(u, r / (ROWS - 1), t);
+          if (r === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+        }
+        ctx.strokeStyle = 'rgba(255,255,255,' + (0.18 * soft).toFixed(3) + ')';
+        ctx.stroke();
+      }
+
+      // Узлы на ближних рядах — акцент, который ловит глаз
+      for (r = 0; r < ROWS; r += 3) {
+        v = r / (ROWS - 1);
+        for (c = 0; c < COLS; c += step) {
+          p = project(c / (COLS - 1), v, t);
+          if (p.fade <= 0.05) continue;
+          ctx.fillStyle = 'rgba(255,255,255,' + (p.fade * 0.7 * soft).toFixed(3) + ')';
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 2 * p.fade + 0.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
+    if (reduced) {                     // без движения — один статичный кадр
+      draw(0);
+      window.addEventListener('resize', function () { draw(0); });
+      return;
+    }
+
+    var last = 0;
+    function frame(now) {
+      requestAnimationFrame(frame);
+      var gap = dragging ? 16 : MIN_GAP;
+      if (now - last < gap) return;
+      last = now;
+
+      var box = host.getBoundingClientRect();
+      if (box.bottom < 0 || box.top > window.innerHeight) return;   // вне экрана не считаем
+      draw(now);
+    }
+    requestAnimationFrame(frame);
+
+    window.addEventListener('resize', resize);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();

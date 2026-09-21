@@ -18,6 +18,21 @@
   --font-display:"Unbounded","Inter",system-ui,sans-serif;
   --font-mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
 
+  /* Шкала кеглей. Раньше каждый блок задавал размер сам, и рядом
+     оказывались 14.5, 15, 15.5 и 16 — глаз читает это как неряшливость.
+     Теперь все тексты берут размер отсюда. */
+  --t-hero:clamp(38px,8.6vw,124px);   /* заголовок первого экрана */
+  --t-h2:clamp(32px,6.4vw,76px);      /* названия разделов */
+  --t-h3:clamp(22px,2.6vw,32px);      /* крупные подзаголовки */
+  --t-h4:clamp(18px,1.9vw,23px);      /* заголовки карточек */
+  --t-lead:clamp(16px,1.35vw,19px);   /* вводные абзацы */
+  --t-body:15.5px;                    /* основной текст */
+  --t-small:13.5px;                   /* подписи */
+  --t-mono:12px;                      /* моношрифт: номера, метки */
+
+  --lh-body:1.65;
+  --lh-tight:1.5;
+
   --container:1280px;
   --pad:clamp(20px,4vw,64px);
   --sec-pad:clamp(72px,10vw,160px);
@@ -129,22 +144,6 @@ table{border-collapse:collapse;width:100%}
 .burger.is-open i:nth-child(1){transform:translateY(6px) rotate(45deg)}
 .burger.is-open i:nth-child(2){transform:translateY(-6px) rotate(-45deg)}
 
-/* ---------- 5b. ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА И ВАЛЮТЫ ---------- */
-.switch{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.switch__grp{display:flex;align-items:center;gap:2px;border:1px solid var(--line);border-radius:100px;padding:3px}
-.switch__grp button{
-  font-family:var(--font-body);font-size:12px;font-weight:500;letter-spacing:.02em;
-  min-height:28px;padding:5px 10px;border-radius:100px;background:none;border:none;
-  color:var(--muted);cursor:pointer;transition:background .3s var(--ease),color .3s var(--ease);
-}
-.switch__grp button:hover{color:var(--ink)}
-.switch__grp button.is-active{background:var(--ink);color:var(--on-ink)}
-.mmenu .switch{margin-top:32px}
-.mmenu .switch__grp{border-color:rgba(255,255,255,.18)}
-.mmenu .switch__grp button{color:rgba(255,255,255,.6)}
-.mmenu .switch__grp button:hover{color:#fff}
-.mmenu .switch__grp button.is-active{background:#fff;color:#0b0b12}
-
 /* ---------- 6. МОБИЛЬНОЕ МЕНЮ ---------- */
 .mmenu{
   position:fixed;inset:0;z-index:890;background:#0b0b12;color:#fff;
@@ -166,7 +165,7 @@ table{border-collapse:collapse;width:100%}
 .mmenu.is-open .mmenu__nav a:nth-child(6){animation-delay:.45s}
 @keyframes mIn{to{opacity:1;transform:translateY(0)}}
 .mmenu__nav em{font-family:var(--font-body);font-size:12px;font-style:normal;opacity:.4}
-.mmenu__foot{margin-top:48px;display:flex;flex-wrap:wrap;gap:20px;font-size:14px;opacity:.75}
+.mmenu__foot{margin-top:48px;display:flex;flex-wrap:wrap;gap:20px;font-size:var(--t-small);opacity:.75}
 .mmenu__foot a{display:inline-flex;align-items:center;min-height:44px}
 
 /* ---------- 7. КНОПКИ ---------- */
@@ -204,7 +203,7 @@ table{border-collapse:collapse;width:100%}
 .sec-head{max-width:none;margin-bottom:clamp(40px,6vw,88px)}
 .sec-num{
   position:relative;display:block;padding-top:20px;margin-bottom:clamp(24px,3vw,44px);
-  font-family:var(--font-mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  font-family:var(--font-mono);font-size:var(--t-mono);letter-spacing:.16em;text-transform:uppercase;
   color:var(--muted);
 }
 /* Линейка над меткой прочерчивается при появлении блока */
@@ -216,10 +215,10 @@ table{border-collapse:collapse;width:100%}
 .sec-num.is-in::before{transform:scaleX(1)}
 .sec-title{
   font-family:var(--font-display);font-weight:800;
-  font-size:clamp(34px,7vw,84px);line-height:.98;letter-spacing:-.04em;text-transform:none;
+  font-size:var(--t-h2);line-height:1;letter-spacing:-.04em;text-transform:none;
 }
 .sec-title{max-width:16ch}
-.sec-desc{margin-top:24px;font-size:clamp(15px,1.4vw,19px);line-height:1.65;color:var(--muted);max-width:62ch}
+.sec-desc{margin-top:24px;font-size:var(--t-lead);line-height:var(--lh-body);color:var(--muted);max-width:60ch}
 
 /* ---------- 9. ГЕРОЙ ---------- */
 .hero{padding-top:clamp(120px,17vh,190px);padding-bottom:clamp(48px,7vw,90px);position:relative;overflow:hidden}
@@ -230,11 +229,11 @@ table{border-collapse:collapse;width:100%}
 }
 .dot{width:7px;height:7px;border-radius:50%;background:var(--ink);animation:pulse 1.8s infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(.75)}}
-.hero__loc{font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.hero__loc{font-family:var(--font-mono);font-size:var(--t-mono);letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
 
 .hero__title{
   font-family:var(--font-display);font-weight:800;
-  font-size:clamp(42px,11.5vw,168px);line-height:.9;letter-spacing:-.05em;
+  font-size:var(--t-hero);line-height:.92;letter-spacing:-.05em;
 }
 .hero__title .line{display:block;overflow:hidden;padding:.3em 0 .14em;margin:-.3em 0 -.14em}
 .hero__title .line > span{display:block;transform:translateY(105%);opacity:0}
@@ -253,7 +252,7 @@ html:not(.js) .loader{display:none}
 .hero__title:hover .line--accent > span{color:var(--ink)}
 
 .hero__bottom{display:grid;grid-template-columns:1.25fr 1fr;gap:clamp(24px,4vw,64px);align-items:end;margin-top:clamp(32px,4vw,56px)}
-.hero__lead{font-size:clamp(15px,1.45vw,19px);line-height:1.65;color:var(--muted);max-width:60ch}
+.hero__lead{font-size:var(--t-lead);line-height:var(--lh-body);color:var(--muted);max-width:60ch}
 .hero__lead b{color:var(--ink);font-weight:600}
 .hero__actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end}
 
@@ -263,7 +262,7 @@ html:not(.js) .loader{display:none}
 }
 .stat{display:flex;flex-direction:column;gap:8px}
 .stat b{font-family:var(--font-display);font-size:clamp(30px,4.4vw,56px);font-weight:600;line-height:1;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
-.stat span{font-size:13px;color:var(--muted);line-height:1.45}
+.stat span{font-size:var(--t-small);color:var(--muted);line-height:1.45}
 
 .hero__scroll{display:flex;align-items:center;gap:14px;margin-top:36px}
 .hero__scroll span{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
@@ -276,10 +275,14 @@ html:not(.js) .loader{display:none}
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
   mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
 }
-.marquee__track{display:flex;align-items:center;gap:28px;width:max-content;animation:marq 34s linear infinite}
-.marquee:hover .marquee__track{animation-play-state:paused}
+.marquee__track{
+  display:flex;align-items:center;gap:28px;width:max-content;
+  will-change:transform;
+}
+/* Без скрипта строка всё равно едет — обычной анимацией */
+html:not(.js) .marquee__track{animation:marq 34s linear infinite}
 .marquee span{font-family:var(--font-display);font-size:clamp(18px,2.6vw,34px);font-weight:600;letter-spacing:-.02em;white-space:nowrap}
-.marquee i{font-style:normal;font-size:14px;opacity:.35}
+.marquee i{font-style:normal;font-size:var(--t-small);opacity:.35}
 @keyframes marq{to{transform:translateX(-50%)}}
 
 /* ---------- 11. КАРТОЧКИ УСЛУГ ---------- */
@@ -289,28 +292,14 @@ html:not(.js) .loader{display:none}
 .card:hover{background:rgba(255,255,255,.035)}
 .card:hover::before{transform:scaleX(1)}
 .card > *{position:relative;z-index:1}
-.card__num{font-family:var(--font-mono);font-size:12px;letter-spacing:.16em;color:var(--muted);transition:color .5s}
+.card__num{font-family:var(--font-mono);font-size:var(--t-mono);letter-spacing:.16em;color:var(--muted);transition:color .5s}
 .card:hover .card__num{color:var(--ink)}
-.card h3{font-family:var(--font-display);font-size:clamp(20px,2vw,27px);font-weight:600;letter-spacing:-.02em;margin:22px 0 14px}
-.card p{font-size:15px;line-height:1.6;color:var(--muted);transition:color .5s}
+.card h3{font-family:var(--font-display);font-size:var(--t-h4);font-weight:600;letter-spacing:-.02em;margin:22px 0 14px}
+.card p{font-size:var(--t-body);line-height:var(--lh-body);color:var(--muted);transition:color .5s}
 .card:hover p{color:rgba(255,255,255,.8)}
 .card__list{margin-top:22px;display:flex;flex-wrap:wrap;gap:8px}
 .card__list li{font-size:12px;padding:6px 12px;border:1px solid var(--line-strong);border-radius:100px;transition:border-color .5s}
 .card:hover .card__list li{border-color:var(--line-strong)}
-
-/* ---------- 11b. ВИДЫ БИЗНЕСА ---------- */
-.biz{margin-top:clamp(56px,7vw,104px)}
-.biz__title{font-family:var(--font-display);font-size:clamp(20px,2.4vw,30px);font-weight:600;letter-spacing:-.025em}
-.biz__desc{margin-top:10px;font-size:15px;line-height:1.6;color:var(--muted);max-width:60ch}
-.biz-grid{margin-top:clamp(28px,3vw,40px);display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line)}
-.biz-card{background:var(--bg);padding:clamp(20px,2vw,28px);display:flex;flex-direction:column;transition:background .5s var(--ease)}
-.biz-card:hover{background:rgba(255,255,255,.035)}
-.biz-card__tag{
-  align-self:flex-start;font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--muted);padding:5px 10px;border:1px solid var(--line-strong);border-radius:100px;
-}
-.biz-card h4{font-family:var(--font-display);font-size:16px;font-weight:600;letter-spacing:-.02em;line-height:1.3;margin:16px 0 10px}
-.biz-card p{font-size:13.5px;line-height:1.55;color:var(--muted)}
 
 /* ---------- 12. ТАРИФЫ ---------- */
 .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(16px,1.6vw,24px);align-items:start}
@@ -330,29 +319,26 @@ html:not(.js) .loader{display:none}
   position:absolute;top:-1px;right:-1px;background:var(--ink);color:var(--on-ink);
   font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:8px 14px;
 }
-.plan__label{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;opacity:.55}
+.plan__label{font-family:var(--font-mono);font-size:var(--t-mono);letter-spacing:.16em;text-transform:uppercase;opacity:.55}
 .plan__name{font-family:var(--font-display);font-size:clamp(28px,3.2vw,40px);font-weight:700;letter-spacing:-.035em;margin:12px 0 14px}
-.plan__for{font-size:14.5px;line-height:1.55;opacity:.65;min-height:4.6em}
+.plan__for{font-size:var(--t-body);line-height:var(--lh-tight);opacity:.65;min-height:4.6em}
 .plan__price{display:flex;align-items:flex-start;gap:4px;margin:26px 0 10px;font-family:var(--font-display);font-weight:800;letter-spacing:-.05em;line-height:1}
 .plan__price .cur{font-size:clamp(20px,2vw,26px);margin-top:.35em;opacity:.55}
-.plan__price b{font-size:clamp(48px,6.4vw,82px);font-variant-numeric:tabular-nums;white-space:nowrap}
-/* ₽/₸ рендерятся длиннее, чем $ — уменьшаем кегль, чтобы не переносилось */
-.plan__price--long b{font-size:clamp(30px,4.2vw,46px);letter-spacing:-.02em}
-.plan__price--long .cur{font-size:clamp(16px,1.6vw,20px)}
+.plan__price b{font-size:clamp(48px,6.4vw,82px);font-variant-numeric:tabular-nums}
 .plan__meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:26px}
-.plan__meta span{font-family:var(--font-mono);font-size:12px;padding:6px 12px;border:1px solid currentColor;opacity:.5;border-radius:100px}
+.plan__meta span{font-family:var(--font-mono);font-size:var(--t-mono);padding:6px 12px;border:1px solid currentColor;opacity:.5;border-radius:100px}
 .plan__list{margin-top:28px;padding-top:26px;border-top:1px solid currentColor;display:flex;flex-direction:column;gap:13px}
 .plan:not(.plan--pop) .plan__list{border-top-color:rgba(255,255,255,.18)}
 .plan--pop .plan__list{border-top-color:var(--line-strong)}
-.plan__list li{position:relative;padding-left:26px;font-size:14.5px;line-height:1.5;opacity:.85}
+.plan__list li{position:relative;padding-left:26px;font-size:var(--t-body);line-height:var(--lh-tight);opacity:.85}
 .plan__list li::before{
   content:"";position:absolute;left:0;top:.55em;width:12px;height:2px;background:currentColor;
 }
-.plans__note{margin-top:clamp(28px,4vw,48px);font-size:15px;color:rgba(255,255,255,.6);max-width:62ch}
+.plans__note{margin-top:clamp(28px,4vw,48px);font-size:var(--t-body);color:rgba(255,255,255,.6);max-width:60ch}
 
 /* ---------- 13. ТАБЛИЦА СРАВНЕНИЯ ---------- */
 .table-wrap{overflow-x:auto;border:1px solid var(--line);margin-top:clamp(28px,4vw,48px)}
-.table{min-width:680px;font-size:14.5px}
+.table{min-width:680px;font-size:var(--t-body)}
 .table th,.table td{padding:16px 20px;text-align:left;border-bottom:1px solid var(--line)}
 .table thead th{
   background:var(--ink);color:var(--on-ink);font-family:var(--font-display);font-weight:600;font-size:15px;
@@ -371,7 +357,7 @@ html:not(.js) .loader{display:none}
 
 /* ---------- 14. ДОПОЛНИТЕЛЬНО ---------- */
 .addons{margin-top:clamp(48px,7vw,96px)}
-.addons__title{font-family:var(--font-display);font-size:clamp(20px,2.4vw,30px);font-weight:600;letter-spacing:-.025em;margin-bottom:28px}
+.addons__title{font-family:var(--font-display);font-size:var(--t-h3);font-weight:600;letter-spacing:-.025em;margin-bottom:28px}
 .addons__list{border-top:1px solid var(--line)}
 .addons__list li{
   display:flex;align-items:center;justify-content:space-between;gap:20px;
@@ -379,8 +365,8 @@ html:not(.js) .loader{display:none}
   transition:padding .4s var(--ease),background .4s;
 }
 .addons__list li:hover{padding-inline:16px;background:rgba(255,255,255,.04)}
-.addons__list span{font-size:clamp(15px,1.6vw,19px)}
-.addons__list b{font-family:var(--font-display);font-size:clamp(15px,1.6vw,19px);font-weight:600;white-space:nowrap}
+.addons__list span{font-size:var(--t-lead)}
+.addons__list b{font-family:var(--font-display);font-size:var(--t-lead);font-weight:600;white-space:nowrap}
 
 /* ---------- 15. ПРОЦЕСС ---------- */
 .steps{border-top:1px solid rgba(255,255,255,.18)}
@@ -394,9 +380,9 @@ html:not(.js) .loader{display:none}
 .step:hover::before{width:100%}
 .step > *{position:relative;z-index:1}
 .step__n{font-family:var(--font-mono);font-size:clamp(20px,2.2vw,28px);font-weight:500;opacity:.4;letter-spacing:.02em}
-.step__body h3{font-family:var(--font-display);font-size:clamp(20px,2.6vw,32px);font-weight:600;letter-spacing:-.03em;margin-bottom:12px}
-.step__body p{font-size:15px;line-height:1.65;color:rgba(255,255,255,.6);max-width:66ch}
-.step__time{font-family:var(--font-mono);font-size:12.5px;letter-spacing:.04em;color:rgba(255,255,255,.55);text-align:right;padding-top:.6em}
+.step__body h3{font-family:var(--font-display);font-size:var(--t-h3);font-weight:600;letter-spacing:-.03em;margin-bottom:12px}
+.step__body p{font-size:var(--t-body);line-height:var(--lh-body);color:rgba(255,255,255,.6);max-width:64ch}
+.step__time{font-family:var(--font-mono);font-size:var(--t-mono);letter-spacing:.04em;color:rgba(255,255,255,.55);text-align:right;padding-top:.6em}
 
 /* ---------- 16. ФОРМАТЫ ---------- */
 .works{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(16px,2vw,28px)}
@@ -407,9 +393,9 @@ html:not(.js) .loader{display:none}
 .work__vis svg{width:100%;height:100%;fill:var(--line-strong);stroke:var(--line-strong);transition:fill .5s,stroke .5s,transform .7s var(--ease)}
 .work:hover .work__vis svg{fill:var(--on-ink);stroke:var(--on-ink);transform:scale(1.05)}
 .work__info{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin:22px 0 12px}
-.work__info h3{font-family:var(--font-display);font-size:clamp(17px,1.7vw,22px);font-weight:600;letter-spacing:-.025em}
-.work__info span{font-family:var(--font-mono);font-size:12px;color:var(--muted);white-space:nowrap}
-.work p{font-size:14.5px;line-height:1.6;color:var(--muted)}
+.work__info h3{font-family:var(--font-display);font-size:var(--t-h4);font-weight:600;letter-spacing:-.025em}
+.work__info span{font-family:var(--font-mono);font-size:var(--t-mono);color:var(--muted);white-space:nowrap}
+.work p{font-size:var(--t-body);line-height:var(--lh-body);color:var(--muted)}
 
 /* ---------- 17. ПОЧЕМУ МЫ ---------- */
 .section--split{border-top:1px solid var(--line)}
@@ -418,13 +404,13 @@ html:not(.js) .loader{display:none}
 .why__left .btn{margin-top:32px}
 .why__item{padding:26px 0;border-bottom:1px solid var(--line)}
 .why__item:first-child{padding-top:0}
-.why__item b{display:block;font-family:var(--font-display);font-size:clamp(17px,1.8vw,23px);font-weight:600;letter-spacing:-.025em;margin-bottom:10px}
-.why__item p{font-size:15px;line-height:1.65;color:var(--muted)}
+.why__item b{display:block;font-family:var(--font-display);font-size:var(--t-h4);font-weight:600;letter-spacing:-.025em;margin-bottom:10px}
+.why__item p{font-size:var(--t-body);line-height:var(--lh-body);color:var(--muted)}
 
 /* ---------- 18. ЦИТАТА ---------- */
 .quote{padding-block:clamp(64px,9vw,140px);background:var(--ink);color:#fff;text-align:center}
 .quote__text{font-family:var(--font-display);font-size:clamp(22px,4.2vw,56px);font-weight:600;line-height:1.18;letter-spacing:-.04em;max-width:20ch;margin-inline:auto}
-.quote__author{display:block;margin-top:28px;font-size:13px;letter-spacing:.1em;color:rgba(255,255,255,.5)}
+.quote__author{display:block;margin-top:28px;font-size:var(--t-small);letter-spacing:.1em;color:rgba(255,255,255,.5)}
 
 /* ---------- 19. FAQ ---------- */
 .faq{border-top:1px solid var(--line);margin-top:clamp(24px,3vw,40px)}
@@ -445,7 +431,7 @@ html:not(.js) .loader{display:none}
 .faq__item[open] summary i{transform:rotate(90deg)}
 .faq__item[open] summary i::after{transform:scaleY(0)}
 .faq__body{overflow:hidden}
-.faq__body p{padding:0 4px 28px;max-width:76ch;font-size:15.5px;line-height:1.7;color:var(--muted)}
+.faq__body p{padding:0 4px 28px;max-width:64ch;font-size:var(--t-body);line-height:var(--lh-body);color:var(--muted)}
 .faq__item[open] .faq__body p{animation:faqIn .5s var(--ease)}
 @keyframes faqIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 
@@ -507,7 +493,7 @@ html:not(.js) .loader{display:none}
 .footer__col a{font-size:15px;width:fit-content;position:relative;display:inline-flex;align-items:center;min-height:44px}
 .footer__col a::after{content:"";position:absolute;left:0;right:0;bottom:9px;height:1px;background:var(--ink);transform:scaleX(0);transform-origin:right;transition:transform .4s var(--ease)}
 .footer__col a:hover::after{transform:scaleX(1);transform-origin:left}
-.footer__col--wide p{font-size:15px;line-height:1.6;color:var(--muted);max-width:46ch}
+.footer__col--wide p{font-size:var(--t-body);line-height:var(--lh-body);color:var(--muted);max-width:46ch}
 .footer__bottom{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;padding-top:24px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
 .to-top{font-size:13px;color:var(--ink);display:inline-flex;align-items:center;min-height:44px}
 
@@ -535,7 +521,6 @@ html:not(.js) .loader{display:none}
 @media (max-width:1080px){
   .cards{grid-template-columns:repeat(2,1fr)}
   .works{grid-template-columns:repeat(2,1fr)}
-  .biz-grid{grid-template-columns:repeat(3,1fr)}
   .plans{grid-template-columns:1fr;max-width:620px;margin-inline:auto}
   .plan__for{min-height:0}
   .footer__row{grid-template-columns:repeat(2,1fr)}
@@ -543,9 +528,8 @@ html:not(.js) .loader{display:none}
   .hero__actions{justify-content:flex-start}
 }
 @media (max-width:900px){
-  .nav,.header__cta,.header .switch{display:none}
+  .nav,.header__cta{display:none}
   .burger{display:block}
-  .biz-grid{grid-template-columns:repeat(2,1fr)}
   .why{grid-template-columns:1fr}
   .why__left{position:static}
   .contact__grid{grid-template-columns:1fr}
@@ -554,7 +538,7 @@ html:not(.js) .loader{display:none}
   .step__time{grid-column:2;text-align:left;font-size:12px;padding-top:0}
 }
 @media (max-width:640px){
-  .cards,.works,.biz-grid{grid-template-columns:1fr}
+  .cards,.works{grid-template-columns:1fr}
   .form{grid-template-columns:1fr}
   .footer__row{grid-template-columns:1fr;gap:26px}
   .hero__scroll{display:none}
@@ -601,49 +585,57 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
   mask-image:linear-gradient(180deg,transparent,#000 12%,#000 88%,transparent);
 }
 .paths svg{display:block;width:100%;height:100%}
-.paths--flip svg{transform:scaleX(-1)}
 .paths path{
   fill:none;stroke:currentColor;
   /* Штрих почти сплошной: по линии бежит разрыв, а не пунктир.
      Доли считаются от pathLength="1", то есть от длины самой кривой. */
   stroke-dasharray:.82 .18;
   opacity:var(--op);
-  animation:pathFlow var(--dur) linear infinite;
-  animation-play-state:paused;
+  /* Штрих плывёт сам, прокрутка его разгоняет. Значение --flow ставит
+     скрипт, --k разводит кривые по скорости, чтобы пучок не шёл монолитом. */
+  stroke-dashoffset:calc(var(--flow,0) * var(--k,1));
 }
-.paths.is-running path{animation-play-state:running}
-@keyframes pathFlow{from{stroke-dashoffset:0}  to{stroke-dashoffset:-1}}
 
 /* «Дыхание» пучка задано на контейнере, а не на каждой кривой.
    Это один композитный слой вместо 120 перерисовок в кадр:
    та же живость на фоне, но без просадки кадров. */
-.paths{animation:pathsBreathe 9s ease-in-out infinite;animation-play-state:paused}
+.paths{animation:pathsBreathe 6.5s ease-in-out infinite;animation-play-state:paused}
 .paths.is-running{animation-play-state:running}
-@keyframes pathsBreathe{0%,100%{opacity:.72} 50%{opacity:1}}
+@keyframes pathsBreathe{0%,100%{opacity:.5} 50%{opacity:1}}
 
-/* ---------- ГЕРОЙ: ТЁМНЫЙ, С ЧЁРНОЙ ДЫРОЙ ---------- */
+/* Пучок сдвигается и слегка поворачивается по ходу прокрутки.
+   Значения ставит скрипт — это один композитный слой, не перерисовка. */
+.paths svg{
+  transform:translate3d(0,var(--py,0px),0) rotate(var(--rot,0deg)) scale(var(--sc,1));
+  transform-origin:50% 50%;
+  will-change:transform;
+}
+.paths--flip svg{transform:translate3d(0,var(--py,0px),0) rotate(var(--rot,0deg)) scale(var(--sc,1)) scaleX(-1)}
+
+/* ---------- ГЕРОЙ: ТЁМНЫЙ, С ВОЛНОЙ ---------- */
 .hero{background:var(--bg);color:var(--ink)}
 .hero__space{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 .hero__space-in{
-  position:absolute;top:40%;left:71%;width:min(1020px,76vw);z-index:0;
-  transform:translate(-50%,-50%) translate3d(0,var(--par-y,0px),0);
+  position:absolute;inset:-6% -4%;z-index:0;
+  transform:translate3d(0,var(--par-y,0px),0);
 }
-/* Сцена волны: холст Canvas 2D с анимированными линиями.
+/* Сцена волны: сетка в перспективе на холсте.
    Маска растворяет прямоугольник холста в фоне страницы. */
 .wave-stage{
-  position:relative;width:100%;aspect-ratio:736/414;
-  animation:waveFloat 30s ease-in-out infinite;
-  -webkit-mask-image:radial-gradient(50% 50% at 50% 50%,#000 50%,rgba(0,0,0,.5) 80%,transparent 100%);
-  mask-image:radial-gradient(50% 50% at 50% 50%,#000 50%,rgba(0,0,0,.5) 80%,transparent 100%);
+  position:absolute;inset:0;
+  animation:waveFloat 52s ease-in-out infinite;
+  -webkit-mask-image:radial-gradient(86% 82% at 50% 52%,#000 46%,rgba(0,0,0,.6) 78%,transparent 100%);
+  mask-image:radial-gradient(86% 82% at 50% 52%,#000 46%,rgba(0,0,0,.6) 78%,transparent 100%);
 }
 .wave-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* Медленный дрейф всей сцены: сетка дышит, даже когда мышь неподвижна */
 @keyframes waveFloat{
-  0%,100%{transform:translateY(0) rotate(0deg)}
-  50%{transform:translateY(-14px) rotate(.6deg)}
+  0%,100%{transform:translate3d(0,0,0) scale(1)}
+  50%{transform:translate3d(0,-1.4%,0) scale(1.02)}
 }
-/* подсветка диска, пока курсор над первым экраном */
+/* подсветка волны, пока курсор над первым экраном */
 .hero__space-in{transition:filter .6s var(--ease)}
-.hero.is-spinning .hero__space-in{filter:brightness(1.16) contrast(1.04)}
+.hero.is-awake .hero__space-in{filter:brightness(1.16) contrast(1.04)}
 
 .hero .tag{border-color:rgba(255,255,255,.26);color:#fff}
 .hero .dot{background:#fff}
@@ -668,10 +660,6 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
 .at-hero .header__cta::before{background:var(--on-ink)}
 .at-hero .header__cta:hover{color:#fff}
 .at-hero .scroll-progress i{background:#fff}
-.at-hero .header .switch__grp{border-color:rgba(255,255,255,.28)}
-.at-hero .header .switch__grp button{color:rgba(255,255,255,.65)}
-.at-hero .header .switch__grp button:hover{color:#fff}
-.at-hero .header .switch__grp button.is-active{background:#fff;color:var(--on-ink)}
 
 /* ---------- 25.2 Стеклянная кнопка (liquid glass) ---------- */
 .btn--glass{
@@ -805,7 +793,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
   .rider__in{grid-template-columns:1fr;gap:44px}
   .rider__text .quote__text{max-width:none}
   .rider__figure{order:-1;width:min(320px,80%)}
-  .hero__space-in{left:52%;top:44%;width:172vw}
+  .hero__space-in{inset:-8% -10%}
   
   .glass-eye{display:none}
 }
@@ -833,3 +821,205 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
 }
 @media (max-width:900px){ .grid-lines i:nth-child(2),.grid-lines i:nth-child(4){display:none} }
 @media (prefers-reduced-motion:reduce){ .sec-num::before{transform:scaleX(1)} }
+
+/* =========================================================
+   26. ДОПОЛНИТЕЛЬНЫЕ ЭФФЕКТЫ
+   Всё ниже — украшения. Каждый блок отключается в конце файла
+   для тех, кто просил в системе убрать анимации.
+   ========================================================= */
+
+/* ---------- 26.1 Волну можно двигать мышкой ---------- */
+/* Тянем за первый экран целиком: холст лежит под слоем с текстом
+   и сам по себе мышь почти нигде не получает. */
+.hero.is-grabbable{cursor:grab}
+.hero.is-grabbing{cursor:grabbing}
+.hero.is-grabbable a,.hero.is-grabbable button{cursor:pointer}
+
+/* ---------- 26.2 Заголовки разделов по словам ---------- */
+/* Значение "words" ставит скрипт, разрезав заголовок. Без скрипта
+   в разметке остаётся "wipe" — старое раскрытие слева направо. */
+[data-reveal="words"]{opacity:1;transform:none;clip-path:none;transition:none}
+.sec-title .w{display:inline-block;overflow:hidden;vertical-align:top}
+.sec-title .w > i{
+  display:inline-block;font-style:inherit;
+  transform:translateY(105%);
+  transition:transform .85s var(--ease);
+  transition-delay:calc(var(--i) * 60ms);
+}
+.sec-title.is-in .w > i{transform:translateY(0)}
+
+/* ---------- 26.3 Схемы форматов собираются по частям ---------- */
+.work__vis svg > *{
+  opacity:0;transform:scale(.8);transform-box:fill-box;transform-origin:center;
+  transition:opacity .5s var(--ease),transform .6s var(--ease),fill .5s,stroke .5s;
+}
+.work.is-in .work__vis svg > *{opacity:1;transform:scale(1)}
+.work.is-in .work__vis svg > *:nth-child(1){transition-delay:.10s}
+.work.is-in .work__vis svg > *:nth-child(2){transition-delay:.20s}
+.work.is-in .work__vis svg > *:nth-child(3){transition-delay:.30s}
+.work.is-in .work__vis svg > *:nth-child(4){transition-delay:.40s}
+.work.is-in .work__vis svg > *:nth-child(5){transition-delay:.50s}
+
+/* ---------- 26.4 Мягкое свечение за курсором на тёмных секциях ---------- */
+.section--dark{position:relative}
+.glow{
+  position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0;
+  transition:opacity .6s var(--ease);
+  background:radial-gradient(420px circle at var(--gx,50%) var(--gy,50%),
+             rgba(255,255,255,.07),transparent 65%);
+}
+.section--dark.is-lit .glow{opacity:1}
+.section--dark > .container{position:relative;z-index:1}
+
+/* ---------- 26.5 Метки в карточках услуг загораются по очереди ---------- */
+.card__list li{transition:border-color .45s var(--ease),background .45s var(--ease),color .45s var(--ease)}
+.card:hover .card__list li{border-color:var(--ink);background:rgba(255,255,255,.07)}
+.card:hover .card__list li:nth-child(1){transition-delay:.04s}
+.card:hover .card__list li:nth-child(2){transition-delay:.12s}
+.card:hover .card__list li:nth-child(3){transition-delay:.20s}
+
+/* ---------- 26.6 Наведённый тариф выходит вперёд ---------- */
+.plans .plan{transition:opacity .45s var(--ease),border-color .4s,background .4s}
+.plans:hover .plan:not(:hover){opacity:.5}
+
+/* ---------- 26.6.1 Наклон карточек форматов ---------- */
+/* У .work переход transform длится .5s — для слежения за курсором это
+   слишком медленно, поэтому элементам с наклоном ставим короткий. */
+.work[data-tilt]{transition:border-color .4s,transform .18s var(--ease)}
+.works:hover .work:not(:hover){opacity:.62;transition:opacity .45s var(--ease),border-color .4s}
+
+/* ---------- 26.7 FAQ: плавная высота ответа ---------- */
+/* Высоту ставит скрипт; анимация появления текста больше не нужна. */
+.faq__body{height:0;transition:height .45s var(--ease)}
+.faq__item[open] .faq__body p{animation:none}
+.faq__body p{opacity:0;transition:opacity .4s var(--ease) .1s}
+.faq__item[open] .faq__body p{opacity:1}
+
+/* ---------- 26.8 Живая форма ---------- */
+.field input,.field textarea{transition:border-color .4s,box-shadow .4s,background .4s}
+.field input:focus,.field textarea:focus{
+  box-shadow:0 8px 24px -18px rgba(255,255,255,.9);
+  background:rgba(255,255,255,.03);
+}
+.btn.is-sending{pointer-events:none;opacity:.7}
+.form__done{
+  display:flex;align-items:flex-start;gap:12px;
+  opacity:0;transform:translateY(8px);transition:opacity .5s var(--ease),transform .5s var(--ease);
+}
+.form__done.is-on{opacity:1;transform:none}
+.form__done svg{flex-shrink:0;width:22px;height:22px;margin-top:1px}
+.form__done svg path{
+  fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:36;stroke-dashoffset:36;
+}
+.form__done.is-on svg path{animation:checkDraw .5s var(--ease) .15s forwards}
+@keyframes checkDraw{to{stroke-dashoffset:0}}
+
+/* ---------- 26.9 Кнопка «наверх» ---------- */
+.up-btn{
+  position:fixed;right:clamp(16px,2.5vw,34px);bottom:clamp(16px,2.5vw,34px);z-index:60;
+  width:48px;height:48px;display:grid;place-items:center;
+  border:1px solid var(--line-strong);border-radius:50%;
+  background:rgba(7,7,11,.72);color:var(--ink);cursor:pointer;
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  opacity:0;transform:translateY(14px) scale(.9);pointer-events:none;
+  transition:opacity .45s var(--ease),transform .45s var(--ease),background .35s,border-color .35s;
+}
+.up-btn.is-on{opacity:1;transform:none;pointer-events:auto}
+.up-btn:hover{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.up-btn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- 26.9.1 Без скрипта ничего не должно пропасть ---------- */
+html:not(.js) .faq__body{height:auto}
+html:not(.js) .faq__body p{opacity:1}
+html:not(.js) .work__vis svg > *{opacity:1;transform:none}
+html:not(.js) .up-btn{display:none}
+
+/* ---------- 26.10 Спокойный режим ---------- */
+@media (prefers-reduced-motion:reduce){
+  .sec-title .w > i{transform:none;transition:none}
+  .work__vis svg > *{opacity:1;transform:none;transition:none}
+  .glow{display:none}
+  .faq__body{height:auto;transition:none}
+  .faq__body p{opacity:1}
+  .form__done.is-on svg path{animation:none;stroke-dashoffset:0}
+  .up-btn{transition:opacity .2s}
+  .plans:hover .plan:not(:hover){opacity:1}
+}
+
+/* ---------- 26.11 Звёздное поле ---------- */
+/* Один холст на всю страницу. Позади содержимого его не видно:
+   у секций непрозрачный фон. Поэтому слой лежит поверх, но в режиме
+   screen — он только добавляет свет и ничего не затемняет. На белых
+   плашках он не даёт вообще ничего, там и так максимум яркости. */
+.stars{
+  position:fixed;inset:0;z-index:40;pointer-events:none;
+  width:100%;height:100%;
+  mix-blend-mode:screen;
+}
+@media (prefers-reduced-motion:reduce){ .stars{opacity:.6} }
+
+/* ---------- 26.12 Переключатель языка и валюты ---------- */
+.switch{display:flex;align-items:center;gap:10px}
+.switch__grp{display:flex;border:1px solid var(--line);border-radius:100px;overflow:hidden}
+.switch__grp button{
+  min-width:34px;height:30px;padding:0 8px;
+  font-family:var(--font-mono);font-size:11.5px;letter-spacing:.06em;
+  background:none;border:0;color:var(--muted);cursor:pointer;
+  transition:background .35s var(--ease),color .35s var(--ease);
+}
+.switch__grp button:hover{color:var(--ink)}
+.switch__grp button[aria-pressed="true"]{background:var(--ink);color:var(--on-ink)}
+.switch__grp button:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+
+/* В шапке над первым экраном фон тёмный, дальше — тоже: цвета берутся
+   от родителя, поэтому отдельных правил для светлой темы не нужно. */
+.mmenu .switch{margin-top:40px;justify-content:flex-start}
+@media (max-width:1100px){ .header__in > .switch{display:none} }
+
+/* ---------- 26.13 Символ валюты после числа ---------- */
+/* В рублях и тенге знак принято ставить справа: 6 500 ₽, а не ₽6 500. */
+.plan__price.is-suffix{flex-direction:row-reverse;justify-content:flex-end}
+.plan__price.is-suffix .cur{margin-left:6px;margin-right:0}
+
+/* ---------- 26.14 Кнопка поддержки ---------- */
+.help{position:fixed;left:clamp(16px,2.5vw,34px);bottom:clamp(16px,2.5vw,34px);z-index:60;
+  display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+.help__btn{
+  width:54px;height:54px;display:grid;place-items:center;
+  border:1px solid var(--ink);border-radius:50%;background:var(--ink);color:var(--on-ink);
+  cursor:pointer;transition:transform .35s var(--ease),background .35s;
+  box-shadow:0 18px 40px -22px rgba(0,0,0,.9);
+}
+.help__btn:hover{transform:scale(1.06)}
+.help__btn svg{width:22px;height:22px;fill:currentColor}
+.help__close{display:none}
+.help.is-open .help__ico{display:none}
+.help.is-open .help__close{display:block}
+
+.help__panel{
+  width:min(300px,calc(100vw - 40px));
+  border:1px solid var(--line-strong);border-radius:16px;
+  background:rgba(10,10,16,.94);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  padding:18px 16px 10px;
+  transform-origin:0 100%;
+  animation:helpIn .35s var(--ease);
+}
+@keyframes helpIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+.help__title{font-family:var(--font-display);font-size:16px;font-weight:600;margin-bottom:6px}
+.help__note{font-size:12.5px;line-height:1.5;color:var(--muted);margin-bottom:14px}
+.help__item{
+  display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:10px;
+  transition:background .3s var(--ease);
+}
+/* display:flex сильнее атрибута hidden — канал без адреса прячем явно */
+.help__item[hidden]{display:none}
+.help__item:hover{background:rgba(255,255,255,.07)}
+.help__item svg{width:20px;height:20px;flex-shrink:0;fill:currentColor;opacity:.8}
+.help__item b{display:block;font-size:14px;font-weight:500}
+.help__item em{display:block;font-style:normal;font-size:12px;color:var(--muted);margin-top:1px}
+
+@media (prefers-reduced-motion:reduce){
+  .help__panel{animation:none}
+  .help__btn:hover{transform:none}
+}
