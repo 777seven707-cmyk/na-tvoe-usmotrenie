@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+/*
+ * NIKITA design tokens — dark neutral, one restrained accent.
+ * Status colours are reserved for state (health, severity), never decoration.
+ */
+:root {
+  --bg: #0c0d0f;
+  --surface: #121316;
+  --surface-2: #17191c;
+  --border: #23262b;
+  --border-strong: #2f333a;
+  --fg: #e4e6e9;
+  --fg-muted: #9096a0;
+  --fg-subtle: #646a73;
+  --accent: #6b8afd;
+  --accent-fg: #0c0d0f;
+  --ok: #3fb97f;
+  --warn: #d6a234;
+  --danger: #e05252;
+  --info: #5aa9e6;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

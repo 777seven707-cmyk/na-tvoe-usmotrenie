@@ -1,0 +1,11 @@
+{
+  "name": "nikita-e2e",
+  "private": true,
+  "scripts": {
+    "test": "playwright test --trace off"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  },
+  "packageManager": "pnpm@10.28.0"
+}

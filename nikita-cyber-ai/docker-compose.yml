@@ -1,0 +1,87 @@
+# NIKITA CYBER AI — local stack (Phase 1).
+# Analysis workers (worker-static, worker-net, egress proxy) are added in Phase 3.
+name: nikita
+
+x-api-env: &api-env
+  NIKITA_ENVIRONMENT: ${NIKITA_ENVIRONMENT:-development}
+  NIKITA_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-nikita}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-nikita}
+  NIKITA_REDIS_URL: redis://redis:6379/0
+  NIKITA_SECRET_KEY: ${NIKITA_SECRET_KEY:?set NIKITA_SECRET_KEY in .env}
+  NIKITA_ANTHROPIC_API_KEY: ${NIKITA_ANTHROPIC_API_KEY:-}
+
+x-hardening: &hardening
+  security_opt: ["no-new-privileges:true"]
+  cap_drop: ["ALL"]
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-nikita}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-nikita}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    networks: [backend]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    <<: *hardening
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    networks: [backend]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  migrate:
+    <<: *hardening
+    build: { context: ., dockerfile: docker/api.Dockerfile }
+    image: nikita-api:dev
+    command: ["alembic", "upgrade", "head"]
+    environment: *api-env
+    networks: [backend]
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: "no"
+
+  api:
+    <<: *hardening
+    image: nikita-api:dev
+    environment: *api-env
+    read_only: true
+    tmpfs: [/tmp]
+    networks: [backend, frontend]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+    restart: unless-stopped
+
+  web:
+    <<: *hardening
+    build: { context: ., dockerfile: docker/web.Dockerfile }
+    environment:
+      NIKITA_API_ORIGIN: http://api:8000
+    read_only: true
+    tmpfs: [/tmp, /app/.next/cache]
+    networks: [frontend]
+    ports: ["127.0.0.1:${NIKITA_WEB_PORT:-3000}:3000"]
+    depends_on:
+      api: { condition: service_healthy }
+    restart: unless-stopped
+
+networks:
+  # Postgres and Redis have no route outside the compose project.
+  backend:
+    internal: true
+  frontend: {}
+
+volumes:
+  pgdata: {}
