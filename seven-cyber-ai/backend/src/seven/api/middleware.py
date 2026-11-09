@@ -12,10 +12,10 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from nikita.core.audit.logging import get_logger
+from seven.core.audit.logging import get_logger
 
 _REQUEST_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
-log = get_logger("nikita.http")
+log = get_logger("seven.http")
 
 SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",

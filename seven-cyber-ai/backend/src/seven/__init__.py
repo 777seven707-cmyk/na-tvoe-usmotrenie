@@ -1,3 +1,3 @@
-"""NIKITA CYBER AI backend package."""
+"""SEVEN CYBER AI backend package."""
 
 __version__ = "0.1.0"

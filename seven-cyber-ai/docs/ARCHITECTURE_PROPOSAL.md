@@ -1,4 +1,4 @@
-# NIKITA CYBER AI — Architecture Proposal (pre-Phase 1)
+# SEVEN CYBER AI — Architecture Proposal (pre-Phase 1)
 
 Status: **PROPOSAL — awaiting owner approval. No application code has been written.**
 Date: 2026-11-08
@@ -9,7 +9,7 @@ Date: 2026-11-08
 
 | Item | Finding | Consequence |
 |---|---|---|
-| Repository | `na-tvoe-usmotrenie` currently holds an unrelated static website (studio landing page: `index.html`, `assets/`, Russian `README.md`). | The platform must not touch those files. Proposed home: `nikita-cyber-ai/` sub-directory (or a separate repo — owner decision, see §9). |
+| Repository | `na-tvoe-usmotrenie` currently holds an unrelated static website (studio landing page: `index.html`, `assets/`, Russian `README.md`). | The platform must not touch those files. Proposed home: `seven-cyber-ai/` sub-directory (or a separate repo — owner decision, see §9). |
 | Python | 3.13.18 (system), pip 24 | Containers will pin **Python 3.12** (best wheel coverage for `lief`, `androguard`, `scapy`). |
 | Node | 22.x, npm 10, pnpm 10 | pnpm for the web app. |
 | PostgreSQL | 16 installed, cluster stopped | Usable natively for tests in this cloud session. |
@@ -133,10 +133,10 @@ Rejected / deferred: LangChain-style frameworks (unnecessary abstraction over th
 
 ## 3. Final folder structure
 
-Adapted from the brief: Python modules live in one installable package (`nikita`) so the API and workers share code with clean imports; the brief's top-level `core/`, `engines/`, etc. become sub-packages.
+Adapted from the brief: Python modules live in one installable package (`seven`) so the API and workers share code with clean imports; the brief's top-level `core/`, `engines/`, etc. become sub-packages.
 
 ```
-nikita-cyber-ai/
+seven-cyber-ai/
 ├── apps/
 │   └── web/                      Next.js dashboard
 │       ├── app/(dashboard)/…     14 pages (dashboard, projects, workspace, inspectors, …)
@@ -145,7 +145,7 @@ nikita-cyber-ai/
 │       └── lib/                  api client, ws client, zod schemas
 ├── backend/
 │   ├── pyproject.toml / uv.lock
-│   ├── src/nikita/
+│   ├── src/seven/
 │   │   ├── api/                  FastAPI app, routers, deps, websocket hub
 │   │   ├── core/
 │   │   │   ├── config/           settings, secrets loading
@@ -304,7 +304,7 @@ Each phase ends with: tests run → errors fixed → `PROJECT_STATUS.md` updated
 
 ## 9. Decisions requested from the owner
 
-1. **Location:** (a) `nikita-cyber-ai/` sub-directory in this repo on branch `claude/trusting-gauss-63rs2i` *(recommended for now — the session can only push to this repo)*, or (b) a new dedicated repository you create and attach.
+1. **Location:** (a) `seven-cyber-ai/` sub-directory in this repo on branch `claude/trusting-gauss-63rs2i` *(recommended for now — the session can only push to this repo)*, or (b) a new dedicated repository you create and attach.
 2. **Auth model:** single-owner local account bootstrapped from env (recommended), or multi-user from day one.
 3. **Task queue:** Celery (recommended — matches brief, mature revoke/beat support).
 4. **Graph library:** React Flow + ELK auto-layout (recommended) vs Cytoscape.js.

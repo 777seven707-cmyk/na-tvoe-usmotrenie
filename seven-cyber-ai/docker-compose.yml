@@ -1,13 +1,13 @@
-# NIKITA CYBER AI — local stack (Phase 1).
+# SEVEN CYBER AI — local stack (Phase 1).
 # Analysis workers (worker-static, worker-net, egress proxy) are added in Phase 3.
-name: nikita
+name: seven
 
 x-api-env: &api-env
-  NIKITA_ENVIRONMENT: ${NIKITA_ENVIRONMENT:-development}
-  NIKITA_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-nikita}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-nikita}
-  NIKITA_REDIS_URL: redis://redis:6379/0
-  NIKITA_SECRET_KEY: ${NIKITA_SECRET_KEY:?set NIKITA_SECRET_KEY in .env}
-  NIKITA_ANTHROPIC_API_KEY: ${NIKITA_ANTHROPIC_API_KEY:-}
+  SEVEN_ENVIRONMENT: ${SEVEN_ENVIRONMENT:-development}
+  SEVEN_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-seven}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-seven}
+  SEVEN_REDIS_URL: redis://redis:6379/0
+  SEVEN_SECRET_KEY: ${SEVEN_SECRET_KEY:?set SEVEN_SECRET_KEY in .env}
+  SEVEN_ANTHROPIC_API_KEY: ${SEVEN_ANTHROPIC_API_KEY:-}
 
 x-hardening: &hardening
   security_opt: ["no-new-privileges:true"]
@@ -17,9 +17,9 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-nikita}
+      POSTGRES_USER: ${POSTGRES_USER:-seven}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
-      POSTGRES_DB: ${POSTGRES_DB:-nikita}
+      POSTGRES_DB: ${POSTGRES_DB:-seven}
     volumes: [pgdata:/var/lib/postgresql/data]
     networks: [backend]
     healthcheck:
@@ -44,7 +44,7 @@ services:
   migrate:
     <<: *hardening
     build: { context: ., dockerfile: docker/api.Dockerfile }
-    image: nikita-api:dev
+    image: seven-api:dev
     command: ["alembic", "upgrade", "head"]
     environment: *api-env
     networks: [backend]
@@ -54,7 +54,7 @@ services:
 
   api:
     <<: *hardening
-    image: nikita-api:dev
+    image: seven-api:dev
     environment: *api-env
     read_only: true
     tmpfs: [/tmp]
@@ -68,11 +68,11 @@ services:
     <<: *hardening
     build: { context: ., dockerfile: docker/web.Dockerfile }
     environment:
-      NIKITA_API_ORIGIN: http://api:8000
+      SEVEN_API_ORIGIN: http://api:8000
     read_only: true
     tmpfs: [/tmp, /app/.next/cache]
     networks: [frontend]
-    ports: ["127.0.0.1:${NIKITA_WEB_PORT:-3000}:3000"]
+    ports: ["127.0.0.1:${SEVEN_WEB_PORT:-3000}:3000"]
     depends_on:
       api: { condition: service_healthy }
     restart: unless-stopped

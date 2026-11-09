@@ -1,4 +1,4 @@
-"""Run against real PostgreSQL + Redis. Enabled when NIKITA_TEST_DATABASE_URL is set."""
+"""Run against real PostgreSQL + Redis. Enabled when SEVEN_TEST_DATABASE_URL is set."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from nikita.api.main import create_app
+from seven.api.main import create_app
 from tests.conftest import TEST_DATABASE_URL, make_settings
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
@@ -21,7 +21,7 @@ def _alembic(*args: str) -> None:
         [sys.executable, "-m", "alembic", *args],
         cwd=BACKEND_DIR,
         check=True,
-        env={"NIKITA_DATABASE_URL": TEST_DATABASE_URL or "", "PATH": ""},
+        env={"SEVEN_DATABASE_URL": TEST_DATABASE_URL or "", "PATH": ""},
         capture_output=True,
     )
 

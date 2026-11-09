@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 // Where the Next.js server forwards /api/* requests. Server-side only: the browser always
 // talks to the same origin, so session cookies stay first-party and no CORS is needed.
-const apiOrigin = process.env.NIKITA_API_ORIGIN ?? "http://localhost:8000";
+const apiOrigin = process.env.SEVEN_API_ORIGIN ?? "http://localhost:8000";
 
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },

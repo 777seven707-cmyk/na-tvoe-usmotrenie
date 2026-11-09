@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from nikita.core.audit.logging import REDACTED, redact_secrets
+from seven.core.audit.logging import REDACTED, redact_secrets
 
 
 def test_top_level_sensitive_keys_redacted() -> None:

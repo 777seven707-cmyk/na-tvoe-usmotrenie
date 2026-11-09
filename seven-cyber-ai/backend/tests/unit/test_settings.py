@@ -7,7 +7,7 @@ from tests.conftest import make_settings
 
 def test_production_rejects_default_secret() -> None:
     s = make_settings(environment="production", secret_key="dev-insecure-change-me")
-    with pytest.raises(RuntimeError, match="NIKITA_SECRET_KEY"):
+    with pytest.raises(RuntimeError, match="SEVEN_SECRET_KEY"):
         s.validate_for_runtime()
 
 
@@ -24,7 +24,7 @@ def test_secrets_not_in_repr() -> None:
 def test_production_disables_docs(ok_checks: list) -> None:  # type: ignore[type-arg]
     from fastapi.testclient import TestClient
 
-    from nikita.api.main import create_app
+    from seven.api.main import create_app
 
     app = create_app(make_settings(environment="production", secret_key="y" * 48), ok_checks)
     with TestClient(app) as c:

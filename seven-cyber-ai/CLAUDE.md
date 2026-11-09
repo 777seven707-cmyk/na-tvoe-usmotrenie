@@ -1,7 +1,7 @@
 # CLAUDE.md — working rules for AI agents on this repository
 
 ## Context
-NIKITA CYBER AI lives in `nikita-cyber-ai/`. The repository root also contains an unrelated
+SEVEN CYBER AI lives in `seven-cyber-ai/`. The repository root also contains an unrelated
 static website (`index.html`, `assets/`, root `README.md`) — never modify it.
 
 Read first: `PROJECT_STATUS.md` (where we are), `docs/ARCHITECTURE_PROPOSAL.md` (approved design),

@@ -7,9 +7,9 @@
 
 | Item | State |
 |---|---|
-| Repository skeleton (`apps/web`, `backend/src/nikita/…`, `docker/`, `e2e/`, `docs/`) | ✅ |
+| Repository skeleton (`apps/web`, `backend/src/seven/…`, `docker/`, `e2e/`, `docs/`) | ✅ |
 | FastAPI app factory, `/api/v1/health/live`, `/api/v1/health/ready` | ✅ |
-| Settings (`NIKITA_*`, secrets as `SecretStr`, production guard) | ✅ |
+| Settings (`SEVEN_*`, secrets as `SecretStr`, production guard) | ✅ |
 | Structured logging with secret redaction, request IDs, security headers | ✅ |
 | SQLAlchemy async + Alembic; `users`, `projects`; migration round-trip | ✅ |
 | Next.js 16 shell: sidebar, mobile drawer, 14 routes, live health card | ✅ |
@@ -26,7 +26,7 @@
 | `tsc --noEmit` (after `next typegen`), `eslint` | pass |
 | `next build` | pass, 15 routes prerendered |
 | Playwright against running API + web (Chromium desktop + Pixel 7) | 10 passed, 2 skipped (device-specific by design) |
-| `docker compose config` | valid; refuses to start without `POSTGRES_PASSWORD` / `NIKITA_SECRET_KEY` |
+| `docker compose config` | valid; refuses to start without `POSTGRES_PASSWORD` / `SEVEN_SECRET_KEY` |
 
 ## Known gaps / not verified
 - **Docker images were not built and the compose stack was not run**: the development cloud

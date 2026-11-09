@@ -1,4 +1,4 @@
-# NIKITA CYBER AI
+# SEVEN CYBER AI
 
 A personal, AI-assisted security research and application analysis workstation.
 Claude plans and interprets; a Python backend enforces scope, approvals and isolation;
@@ -13,7 +13,7 @@ Use only against systems you own or are explicitly authorized to test. See [`SEC
 ## Quick start (Docker)
 
 ```bash
-cp .env.example .env          # set POSTGRES_PASSWORD and NIKITA_SECRET_KEY
+cp .env.example .env          # set POSTGRES_PASSWORD and SEVEN_SECRET_KEY
 docker compose up --build -d
 open http://localhost:3000
 ```
@@ -24,7 +24,7 @@ Requires Python ≥ 3.12 with [uv](https://docs.astral.sh/uv/), Node 22 with pnp
 
 ```bash
 make install
-make migrate      # uses NIKITA_DATABASE_URL
+make migrate      # uses SEVEN_DATABASE_URL
 make api          # http://localhost:8000/api/v1/docs
 make web          # http://localhost:3000
 ```
@@ -34,7 +34,7 @@ make web          # http://localhost:3000
 | Path | Contents |
 |---|---|
 | `apps/web/` | Next.js 16 dashboard (TypeScript, Tailwind 4) |
-| `backend/src/nikita/` | FastAPI app, core (policy, approvals, orchestrator…), engines, workers |
+| `backend/src/seven/` | FastAPI app, core (policy, approvals, orchestrator…), engines, workers |
 | `backend/migrations/` | Alembic migrations |
 | `backend/tests/` | unit, integration, security tests |
 | `e2e/` | Playwright tests |

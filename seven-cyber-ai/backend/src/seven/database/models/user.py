@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING
 from sqlalchemy import Boolean, DateTime, Enum, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from nikita.database.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from seven.database.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 
 if TYPE_CHECKING:
-    from nikita.database.models.project import Project
+    from seven.database.models.project import Project
 
 
 class UserRole(enum.StrEnum):

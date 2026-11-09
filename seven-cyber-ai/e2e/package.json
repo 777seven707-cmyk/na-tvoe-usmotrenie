@@ -1,5 +1,5 @@
 {
-  "name": "nikita-e2e",
+  "name": "seven-e2e",
   "private": true,
   "scripts": {
     "test": "playwright test --trace off"

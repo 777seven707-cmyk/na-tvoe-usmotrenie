@@ -17,9 +17,9 @@ This file tracks what is **actually built** and the interfaces between modules.
 
 ```
 browser ── same origin ──► Next.js (apps/web)
-                              │ rewrite /api/* (server side, NIKITA_API_ORIGIN)
+                              │ rewrite /api/* (server side, SEVEN_API_ORIGIN)
                               ▼
-                           FastAPI (nikita.api)
+                           FastAPI (seven.api)
                               ├── /api/v1/health/live    process liveness
                               └── /api/v1/health/ready   PostgreSQL + Redis checks
                               │
@@ -28,11 +28,11 @@ browser ── same origin ──► Next.js (apps/web)
 
 | Module | Path | State |
 |---|---|---|
-| Settings | `nikita.core.config` | `NIKITA_*` env, `SecretStr` secrets, production guard |
-| Logging | `nikita.core.audit.logging` | structlog, mandatory secret redaction |
-| HTTP middleware | `nikita.api.middleware` | request IDs (validated), security headers |
-| Health | `nikita.api.health`, `routers/health.py` | pluggable checks with timeouts, error class only |
-| Database | `nikita.database` | async SQLAlchemy 2, naming convention, `users`, `projects` |
+| Settings | `seven.core.config` | `SEVEN_*` env, `SecretStr` secrets, production guard |
+| Logging | `seven.core.audit.logging` | structlog, mandatory secret redaction |
+| HTTP middleware | `seven.api.middleware` | request IDs (validated), security headers |
+| Health | `seven.api.health`, `routers/health.py` | pluggable checks with timeouts, error class only |
+| Database | `seven.database` | async SQLAlchemy 2, naming convention, `users`, `projects` |
 | Migrations | `backend/migrations` | Alembic (async), round-trip tested |
 | Dashboard | `apps/web` | app shell, sidebar, 14 routes, live health card |
 

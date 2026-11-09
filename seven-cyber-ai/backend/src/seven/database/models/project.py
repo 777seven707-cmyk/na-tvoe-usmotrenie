@@ -8,10 +8,10 @@ from typing import TYPE_CHECKING
 from sqlalchemy import DateTime, Enum, ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from nikita.database.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from seven.database.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 
 if TYPE_CHECKING:
-    from nikita.database.models.user import User
+    from seven.database.models.user import User
 
 
 class AutonomyMode(enum.StrEnum):

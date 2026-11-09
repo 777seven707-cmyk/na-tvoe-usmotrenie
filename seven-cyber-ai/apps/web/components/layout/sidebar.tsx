@@ -49,10 +49,10 @@ export function Brand() {
   return (
     <Link href="/" className="flex items-center gap-2.5 px-5 py-4">
       <span className="grid size-7 place-items-center rounded-md border border-border-strong bg-surface-2 font-mono text-xs font-semibold text-accent">
-        N
+        S
       </span>
       <span className="text-sm font-semibold tracking-tight">
-        NIKITA <span className="text-fg-muted">CYBER AI</span>
+        SEVEN <span className="text-fg-muted">CYBER AI</span>
       </span>
     </Link>
   );

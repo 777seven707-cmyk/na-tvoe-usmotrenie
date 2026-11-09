@@ -1,4 +1,4 @@
-"""Application settings, loaded from environment variables (prefix ``NIKITA_``).
+"""Application settings, loaded from environment variables (prefix ``SEVEN_``).
 
 Secrets are typed as ``SecretStr`` so they are never rendered by ``repr()`` or logs.
 """
@@ -15,7 +15,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_prefix="NIKITA_",
+        env_prefix="SEVEN_",
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     log_json: bool = Field(default=False, description="Emit JSON logs (use in containers).")
 
-    database_url: str = "postgresql+asyncpg://nikita:nikita@localhost:5432/nikita"
+    database_url: str = "postgresql+asyncpg://seven:seven@localhost:5432/seven"
     redis_url: str = "redis://localhost:6379/0"
 
     # Signs session cookies and CSRF tokens. MUST be overridden outside development.
@@ -46,7 +46,7 @@ class Settings(BaseSettings):
     def validate_for_runtime(self) -> None:
         """Fail fast on dangerous production configuration."""
         if self.is_production and self.secret_key.get_secret_value() == "dev-insecure-change-me":
-            raise RuntimeError("NIKITA_SECRET_KEY must be set in production")
+            raise RuntimeError("SEVEN_SECRET_KEY must be set in production")
 
 
 @lru_cache

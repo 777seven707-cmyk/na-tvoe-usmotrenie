@@ -1,11 +1,11 @@
 .PHONY: help install check test test-backend lint-backend check-web e2e migrate api web compose-config up down
 
-TEST_DB ?= postgresql+asyncpg://nikita:nikita@localhost:5432/nikita_test
+TEST_DB ?= postgresql+asyncpg://seven:seven@localhost:5432/seven_test
 
 help:
 	@echo "install        install backend (uv) and web/e2e (pnpm) dependencies"
 	@echo "check          all static checks + unit/integration tests"
-	@echo "test-backend   pytest (integration tests need NIKITA_TEST_DATABASE_URL / TEST_DB)"
+	@echo "test-backend   pytest (integration tests need SEVEN_TEST_DATABASE_URL / TEST_DB)"
 	@echo "check-web      typecheck + lint + production build of the dashboard"
 	@echo "e2e            Playwright suite (API on :8000 and web on :3000 must be running)"
 	@echo "migrate        alembic upgrade head"
@@ -23,7 +23,7 @@ lint-backend:
 	cd backend && uv run mypy
 
 test-backend:
-	cd backend && NIKITA_TEST_DATABASE_URL=$(TEST_DB) uv run pytest -q
+	cd backend && SEVEN_TEST_DATABASE_URL=$(TEST_DB) uv run pytest -q
 
 check-web:
 	cd apps/web && pnpm typecheck && pnpm lint && pnpm build
@@ -40,7 +40,7 @@ migrate:
 	cd backend && uv run alembic upgrade head
 
 api:
-	cd backend && uv run uvicorn nikita.api.main:app_factory --factory --reload --port 8000
+	cd backend && uv run uvicorn seven.api.main:app_factory --factory --reload --port 8000
 
 web:
 	cd apps/web && pnpm dev

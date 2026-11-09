@@ -9,9 +9,9 @@
 ## Local database
 
 ```bash
-sudo -u postgres psql -c "CREATE ROLE nikita LOGIN PASSWORD 'nikita' CREATEDB;"
-sudo -u postgres psql -c "CREATE DATABASE nikita OWNER nikita;"
-sudo -u postgres psql -c "CREATE DATABASE nikita_test OWNER nikita;"
+sudo -u postgres psql -c "CREATE ROLE seven LOGIN PASSWORD 'seven' CREATEDB;"
+sudo -u postgres psql -c "CREATE DATABASE seven OWNER seven;"
+sudo -u postgres psql -c "CREATE DATABASE seven_test OWNER seven;"
 ```
 
 ## Commands
@@ -20,7 +20,7 @@ sudo -u postgres psql -c "CREATE DATABASE nikita_test OWNER nikita;"
 |---|---|
 | `make install` | install all dependencies |
 | `make check` | ruff, ruff format, mypy (strict), pytest, typecheck, eslint, `next build`, compose validation |
-| `make test-backend` | pytest; integration tests run when `NIKITA_TEST_DATABASE_URL` is set (Makefile sets it) |
+| `make test-backend` | pytest; integration tests run when `SEVEN_TEST_DATABASE_URL` is set (Makefile sets it) |
 | `make e2e` | Playwright (desktop Chrome + Pixel 7). Start `make api` and the built web app first |
 | `make migrate` | apply migrations |
 
@@ -29,7 +29,7 @@ Running Playwright with a preinstalled Chromium: `PW_CHROMIUM_PATH=/path/to/chro
 ## Conventions
 
 - Backend: typed everywhere (`mypy --strict`), ruff with bandit rules (`S`) enabled.
-- New tables: add the model under `nikita/database/models/`, export it in `__init__.py`,
+- New tables: add the model under `seven/database/models/`, export it in `__init__.py`,
   then `uv run alembic revision --autogenerate -m "..."`, review the file (Postgres enum
   types need an explicit drop in `downgrade`), and run `alembic check`.
 - Frontend: Next.js 16 with Cache Components. Read `apps/web/node_modules/next/dist/docs/`

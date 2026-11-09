@@ -5,9 +5,9 @@ from typing import Literal
 from fastapi import APIRouter, Request, Response, status
 from pydantic import BaseModel
 
-from nikita import __version__
-from nikita.api.health import ComponentHealth, run_checks
-from nikita.core.config import Settings
+from seven import __version__
+from seven.api.health import ComponentHealth, run_checks
+from seven.core.config import Settings
 
 router = APIRouter(prefix="/health", tags=["health"])
 

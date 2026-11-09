@@ -6,12 +6,12 @@ from collections.abc import Iterator
 import pytest
 from fastapi.testclient import TestClient
 
-from nikita.api.health import HealthCheck
-from nikita.api.main import create_app
-from nikita.core.config import Settings
+from seven.api.health import HealthCheck
+from seven.api.main import create_app
+from seven.core.config import Settings
 
-TEST_DATABASE_URL = os.environ.get("NIKITA_TEST_DATABASE_URL")
-TEST_REDIS_URL = os.environ.get("NIKITA_TEST_REDIS_URL", "redis://localhost:6379/15")
+TEST_DATABASE_URL = os.environ.get("SEVEN_TEST_DATABASE_URL")
+TEST_REDIS_URL = os.environ.get("SEVEN_TEST_REDIS_URL", "redis://localhost:6379/15")
 
 
 def make_settings(**overrides: object) -> Settings:
@@ -45,7 +45,7 @@ def client(ok_checks: list[HealthCheck]) -> Iterator[TestClient]:
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     if TEST_DATABASE_URL:
         return
-    skip = pytest.mark.skip(reason="NIKITA_TEST_DATABASE_URL not set")
+    skip = pytest.mark.skip(reason="SEVEN_TEST_DATABASE_URL not set")
     for item in items:
         if "postgres" in item.keywords:
             item.add_marker(skip)

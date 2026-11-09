@@ -2,7 +2,7 @@
 
 ## Intended use
 
-NIKITA CYBER AI is for analysing material you own or are explicitly authorized to test:
+SEVEN CYBER AI is for analysing material you own or are explicitly authorized to test:
 your own applications and source code, localhost, isolated training labs, and domains or
 devices covered by written authorization. The platform records authorization (scope rules
 carry a note, an author and an expiry) but cannot verify it — that responsibility is yours.
@@ -19,7 +19,7 @@ threat model. Implemented controls are listed below; everything else is planned.
 | Control | Status |
 |---|---|
 | Secrets as `SecretStr`, never in `repr`, never returned by the API | Phase 1 ✅ |
-| Production refuses default `NIKITA_SECRET_KEY` | Phase 1 ✅ |
+| Production refuses default `SEVEN_SECRET_KEY` | Phase 1 ✅ |
 | Log redaction of password/token/key/cookie/authorization fields | Phase 1 ✅ |
 | Security headers on API and web responses | Phase 1 ✅ |
 | Request-ID validation (header injection) | Phase 1 ✅ |

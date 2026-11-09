@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
-from nikita.api.middleware import SECURITY_HEADERS
+from seven.api.middleware import SECURITY_HEADERS
 
 
 def test_security_headers_present(client: TestClient) -> None:

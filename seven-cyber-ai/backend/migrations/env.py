@@ -9,9 +9,9 @@ from alembic import context
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
-import nikita.database.models  # noqa: F401  (registers tables)
-from nikita.core.config import get_settings
-from nikita.database.base import Base
+import seven.database.models  # noqa: F401  (registers tables)
+from seven.core.config import get_settings
+from seven.database.base import Base
 
 config = context.config
 if config.config_file_name is not None:

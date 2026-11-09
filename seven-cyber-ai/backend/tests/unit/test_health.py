@@ -4,8 +4,8 @@ import asyncio
 
 from fastapi.testclient import TestClient
 
-from nikita.api.health import HealthCheck, run_check
-from nikita.api.main import create_app
+from seven.api.health import HealthCheck, run_check
+from seven.api.main import create_app
 from tests.conftest import make_settings
 
 

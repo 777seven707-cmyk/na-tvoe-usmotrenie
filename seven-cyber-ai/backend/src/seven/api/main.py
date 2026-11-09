@@ -8,13 +8,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from redis.asyncio import Redis
 
-from nikita import __version__
-from nikita.api.health import HealthCheck, database_check, redis_check
-from nikita.api.middleware import RequestContextMiddleware
-from nikita.api.routers import health
-from nikita.core.audit.logging import configure_logging, get_logger
-from nikita.core.config import Settings, get_settings
-from nikita.database.session import create_engine, create_session_factory
+from seven import __version__
+from seven.api.health import HealthCheck, database_check, redis_check
+from seven.api.middleware import RequestContextMiddleware
+from seven.api.routers import health
+from seven.core.audit.logging import configure_logging, get_logger
+from seven.core.config import Settings, get_settings
+from seven.database.session import create_engine, create_session_factory
 
 API_PREFIX = "/api/v1"
 
@@ -27,7 +27,7 @@ def create_app(
     settings = settings or get_settings()
     settings.validate_for_runtime()
     configure_logging(settings.log_level, settings.log_json)
-    log = get_logger("nikita.api")
+    log = get_logger("seven.api")
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -47,7 +47,7 @@ def create_app(
             log.info("api.shutdown")
 
     app = FastAPI(
-        title="NIKITA CYBER AI API",
+        title="SEVEN CYBER AI API",
         version=__version__,
         lifespan=lifespan,
         docs_url=None if settings.is_production else f"{API_PREFIX}/docs",
